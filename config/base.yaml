@@ -1,0 +1,6 @@
+symbol: SAMPLE
+data_path: data/processed/sample_50d.csv
+returns_col: returns
+train_split: 0.6
+threshold: 0.5
+seed: 42

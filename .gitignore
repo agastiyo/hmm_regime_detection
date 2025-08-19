@@ -1,0 +1,11 @@
+data/raw/*
+
+__pycache__/
+
+.DS_Store
+
+api.txt
+
+tex_files/
+
+plan.md
