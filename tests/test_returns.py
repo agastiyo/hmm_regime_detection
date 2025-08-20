@@ -5,6 +5,9 @@ import pandas as pd
 import pandas.api.types as pdt
 from src.utils.config import load_config
 
+# To run in terminal:
+# python3 -m pytest -q
+
 cfg = load_config()
 DATA_PATH = Path(cfg["data"]["processed_path"])
 
