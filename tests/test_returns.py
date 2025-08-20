@@ -29,16 +29,14 @@ def test_index_is_datetime_and_sorted():
 # Makes sure the DataFrame has the expected columns
 def test_expected_columns_present():
     df = load_df()
-    required = {"date", "volume", "simple_ret", "log_ret"}
-    required.add(cfg["data"]["price_col"])  # e.g., "adj_close"
+    required = {cfg["data"]["price_col"], "volume", "simple_ret", "log_ret"}
     missing = required.difference(df.columns)
     assert not missing, f"Missing required columns: {missing}"
 
 # Makes sure the numeric columns are indeed numeric dtypes
 def test_numeric_dtypes():
     df = load_df()
-    numeric_cols = ["volume", "simple_ret", "log_ret"]
-    numeric_cols.add(cfg["data"]["price_col"])
+    numeric_cols = [cfg["data"]["price_col"], "volume", "simple_ret", "log_ret"]
     for c in numeric_cols:
         assert c in df.columns, f"Column {c} missing"
         assert pdt.is_numeric_dtype(df[c]), f"Column {c} is not numeric dtype, got {df[c].dtype}"
