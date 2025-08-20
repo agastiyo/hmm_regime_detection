@@ -1,13 +1,11 @@
-data/raw/*
+data/temp*
 
-data/temp/*
+reports/*
+
+tex_files/*
 
 __pycache__/
 
 .DS_Store
 
 api.txt
-
-tex_files/*
-
-plan.md
