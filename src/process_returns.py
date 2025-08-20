@@ -18,6 +18,9 @@ def load_prices(in_path):
   df.columns = [c.strip().lower() for c in df.columns]
   df = df.sort_values("date").set_index("date")
   
+  df = df[~df.index.duplicated(keep='first')]
+  df = df.drop_duplicates()
+  
   numeric_cols = [c for c in df.columns if c != "date"]
   df = df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
   
