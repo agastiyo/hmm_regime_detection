@@ -1,11 +1,13 @@
 data/raw/*
 
+data/temp/*
+
 __pycache__/
 
 .DS_Store
 
 api.txt
 
-tex_files/
+tex_files/*
 
 plan.md

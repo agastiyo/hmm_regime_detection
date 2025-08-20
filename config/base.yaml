@@ -1,9 +1,11 @@
 data:
   symbol: SAMPLE
-  raw_path: data/raw/sample_50d.csv
-  processed_path: data/processed/sample_50d_processed.csv
+  raw_path: data/raw/SAMPLE_1000d.csv
+  processed_path: data/processed/SAMPLE_1000d_processed.csv
   price_col: adj_close
 
 model:
   target_col: log_ret
   train_frac: 0.6
+  n_iter: 100
+  seed: 42
