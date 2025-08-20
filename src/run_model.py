@@ -4,6 +4,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from hmmlearn.hmm import GaussianHMM
 from utils.config import load_config
+import json
+from datetime import datetime
 
 cfg = load_config()
 symbol = cfg["data"]["symbol"]
@@ -28,18 +30,46 @@ model.startprob_ = model.startprob_[order]
 model.transmat_ = model.transmat_[np.ix_(order, order)]
 
 # Predicting the hidden states for the test data
-hidden_states = model.predict_proba(X_full)
-valid_index = df_full.index
+state_prob = model.predict_proba(X_full)
+predicted_states = model.predict(X_full)
 
-# Creating a DataFrame to hold the probabilities of each state
-probs = pd.DataFrame({"low_vol": hidden_states[:,0], "high_vol": hidden_states[:,1]}, index=valid_index)
+
+# Combine probabilities and state info into a single DataFrame
+probs_states_df = pd.DataFrame({
+	"low_vol_prob": state_prob[:,0],
+	"high_vol_prob": state_prob[:,1],
+	"state": predicted_states
+}, index=df_full.index)
 transition_matrix = pd.DataFrame(model.transmat_.copy(), index=["low_vol", "high_vol"], columns=["low_vol", "high_vol"])
 
-# Saving the transition matrix and probabilities
-p = Path(f"reports/tables/{symbol}_transition_matrix.csv")
-p.parent.mkdir(parents=True, exist_ok=True)
-transition_matrix.to_csv(p, index=True)
+# Save CSVs and collect metadata
+csv_info = []
 
-p = Path(f"reports/tables/{symbol}_probabilities.csv")
-p.parent.mkdir(parents=True, exist_ok=True)
-probs.to_csv(p, index=False)
+transition_matrix_path = f"reports/tables/{symbol}_transition_matrix.csv"
+probs_states_path = f"reports/tables/{symbol}_probs_states.csv"
+
+# Saving the transition matrix, probabilities, and predicted states
+for path, df, desc in [
+	(transition_matrix_path, transition_matrix, "Transition matrix of HMM states"),
+	(probs_states_path, probs_states_df, "State probabilities and predicted HMM state for each date (0=low_vol, 1=high_vol)")
+]:
+	p = Path(path)
+	p.parent.mkdir(parents=True, exist_ok=True)
+	df.to_csv(p, index=True)
+	csv_info.append({
+		"filename": str(p),
+		"description": desc,
+		"n_rows": len(df),
+		"n_columns": len(df.columns),
+		"columns": list(df.columns),
+		"created_at": datetime.now().isoformat()
+	})
+
+# Save metadata JSON
+meta_path = f"reports/tables/{symbol}_metadata.json"
+with open(meta_path, "w") as f:
+	json.dump({
+		"csv_files": csv_info,
+		"generated_at": datetime.now().isoformat(),
+		"symbol": symbol
+	}, f, indent=2)
