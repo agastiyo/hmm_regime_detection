@@ -16,7 +16,7 @@ def load_df():
   df = pd.read_csv(DATA_PATH, parse_dates=["date"]).sort_values("date").set_index("date")
   return df
 
-
+# Makes sure the index is datetime, sorted, and has no duplicates
 def test_index_is_datetime_and_sorted():
     df = load_df()
     # index type
@@ -26,33 +26,35 @@ def test_index_is_datetime_and_sorted():
     # no duplicates
     assert not df.index.duplicated().any()
 
-
+# Makes sure the DataFrame has the expected columns
 def test_expected_columns_present():
     df = load_df()
-    required = {"open", "high", "low", "close", "adj_close", "volume", "simple_ret", "log_ret"}
+    required = {"date", "volume", "simple_ret", "log_ret"}
+    required.add(cfg["data"]["price_col"])  # e.g., "adj_close"
     missing = required.difference(df.columns)
     assert not missing, f"Missing required columns: {missing}"
 
-
+# Makes sure the numeric columns are indeed numeric dtypes
 def test_numeric_dtypes():
     df = load_df()
-    numeric_cols = ["open", "high", "low", "close", "adj_close", "volume", "simple_ret", "log_ret"]
+    numeric_cols = ["volume", "simple_ret", "log_ret"]
+    numeric_cols.add(cfg["data"]["price_col"])
     for c in numeric_cols:
         assert c in df.columns, f"Column {c} missing"
         assert pdt.is_numeric_dtype(df[c]), f"Column {c} is not numeric dtype, got {df[c].dtype}"
 
-
+# Makes sure returns are computed correctly
 def test_returns_math():
     df = load_df()
     # First return should be NaN due to shift(1)
     assert pd.isna(df["simple_ret"].iloc[0]), "First simple_ret should be NaN"
     assert pd.isna(df["log_ret"].iloc[0]), "First log_ret should be NaN"
-    # Relationship between log and simple returns: exp(log) - 1 == simple
+    # Check log returns are consistent with simple returns
     left = np.expm1(df["log_ret"].dropna().values)
     right = df["simple_ret"].dropna().values
     np.testing.assert_allclose(left, right, rtol=1e-10, atol=1e-12)
 
-
+# Makes sure there are no infinite values and that returns are within reasonable magnitudes
 def test_no_inf_and_reasonable_magnitudes():
     df = load_df()
     sr = df["simple_ret"].dropna()
@@ -60,14 +62,14 @@ def test_no_inf_and_reasonable_magnitudes():
     # No infs
     assert np.isfinite(sr).all(), "simple_ret contains non-finite values"
     assert np.isfinite(lr).all(), "log_ret contains non-finite values"
-    # For this synthetic daily series, returns should be modest
+    # Returns should be modest
     assert sr.abs().max() < 0.2, f"Unreasonably large daily return detected: {sr.abs().max():.4f}"
 
-
+# Makes sure the simple returns are defined as close-to-close returns
 def test_close_to_close_definition():
     df = load_df()
     # Recompute simple returns from adj_close to verify no lookahead and correct base
-    px = df["adj_close"].astype(float)
+    px = df[cfg["data"]["price_col"]].astype(float)
     prev = px.shift(1)
     simple_check = (px / prev) - 1.0
     # Compare where both are defined
