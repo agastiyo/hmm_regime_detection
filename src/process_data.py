@@ -31,12 +31,10 @@ def compute_returns(df,price="adj_close"):
   px = df[price].astype(float)
   prev = px.shift(1)
   
-  if (cfg["returns"]["simple"]):
-    df["simple_ret"] = (px / prev) - 1.0
+  df["simple_ret"] = (px / prev) - 1.0
   
-  if (cfg["returns"]["log"]):
-    ratio = (px / prev).where((px > 0) & (prev > 0))
-    df["log_ret"] = np.log(ratio)
+  ratio = (px / prev).where((px > 0) & (prev > 0))
+  df["log_ret"] = np.log(ratio)
   
   return df
 
