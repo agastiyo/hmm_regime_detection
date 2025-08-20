@@ -1,5 +1,5 @@
 data:
   symbol: SAMPLE
-  raw_path: data/raw/sample_50d.csv
-  processed_path: data/processed/sample_50d_processed.csv
+  raw_path: data/raw/sample_100d.csv
+  processed_path: data/processed/sample_100d_processed.csv
   price_col: adj_close
