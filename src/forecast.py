@@ -8,7 +8,7 @@ cfg = load_config()
 symbol = cfg["data"]["symbol"]  # Ticker symbol (e.g., 'QQQ')
 returns = cfg["model"]["target_col"]  # Column name for returns
 prices = cfg["data"]["price_col"]  # Column name for prices
-n_steps = cfg["forecasting"]["n_steps"]  # Number of forecast steps
+n_steps = cfg["forecasting"]["n_steps"]  # Number of days to forecast
 n_sims = cfg["forecasting"]["n_sims"]  # Number of Monte Carlo simulations per step
 
 
@@ -21,43 +21,45 @@ transition_matrix = transition_matrix_df.values  # 2x2 matrix for regime transit
 # Initialize the last known state probabilities (low and high volatility)
 row = df.iloc[-1]
 p_t = np.array([row["low_vol_prob"], row["high_vol_prob"]])
-paths = [p_t.copy()]
 
-# Start with the last known price; will be updated at each step
-price_t = df[prices].iloc[-1]
-# Store forecasted prices: [point_forecast, median_forecast, p05, p95]
-price_paths = [np.array([price_t, np.nan, np.nan, np.nan])]
+# print(str(model.means_.shape) + " " + str(model.covars_.shape))
 
-# Forecast loop: simulate future regime probabilities and prices
-for i in range(n_steps):
-  # Predict next step's regime probabilities
-  p_next = paths[-1] @ transition_matrix
-  paths.append(p_next)
+# --- Monte Carlo path simulation ---
+last_price = df[prices].iloc[-1]
+sim_prices = np.zeros((n_sims, n_steps + 1))
+sim_prices[:, 0] = last_price
 
-  price_sims = []
-  # Monte Carlo simulation for price at next step
-  for j in range(n_sims):
-    # Sample regime (0: low vol, 1: high vol) based on probabilities
-    s = np.random.choice([0, 1], p=p_next)
-    # Sample return from the regime's normal distribution
-    r = np.random.normal(model.means_[s, 0], np.sqrt(model.covars_[s, 0]))
-    # Calculate simulated price
-    price_sims.append(price_t * np.exp(r))
+# For regime probabilities, keep a single path (mean) for reporting
+regime_probs = [p_t.copy()]
 
-  # Aggregate simulation results
-  point_forecast = np.mean(price_sims)  # Mean forecast
-  median_forecast = np.median(price_sims)  # Median forecast
-  p05 = np.quantile(price_sims, 0.05)  # 5th percentile
-  p95 = np.quantile(price_sims, 0.95)  # 95th percentile
+for t in range(1, n_steps + 1):
+  # Predict next step's regime probabilities (mean path)
+  p_next = regime_probs[-1] @ transition_matrix
+  regime_probs.append(p_next)
 
-  price_paths.append(np.array([point_forecast, median_forecast, p05, p95]))
+  # For each simulation, use its own previous price
+  prev_prices = sim_prices[:, t-1]
+  # Draw regimes for each simulation
+  regimes = np.random.choice([0, 1], size=n_sims, p=p_next)
+  # Draw returns for each simulation
+  returns = np.random.normal(model.means_[regimes,0], np.sqrt(model.covars_[regimes,0,0]))
+  # Update prices
+  sim_prices[:, t] = prev_prices * np.exp(returns)
 
-  # Update price_t to the point forecast for the next step (compounding)
-  price_t = point_forecast
+# Aggregate across all simulation paths for each step
+price_paths = []
+for t in range(n_steps + 1):
+  point_forecast = np.mean(sim_prices[:, t])
+  median_forecast = np.median(sim_prices[:, t])
+  p05 = np.quantile(sim_prices[:, t], 0.05)
+  p95 = np.quantile(sim_prices[:, t], 0.95)
+  price_paths.append([point_forecast, median_forecast, p05, p95])
+
+paths = regime_probs
 
 
 # Create DataFrames for forecasted prices and regime probabilities
-forecast_dates = pd.date_range(start=df.index[-1], periods=n_steps+1)
+forecast_dates = pd.date_range(start=df.index[-1], periods=n_steps+1, freq='B')
 price_forecast_df = pd.DataFrame(price_paths, index=forecast_dates, columns=["point_forecast", "median_forecast", "p05", "p95"])
 prob_forecast_df = pd.DataFrame(paths, index=forecast_dates, columns=["low_vol_prob", "high_vol_prob"])
 
