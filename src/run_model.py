@@ -11,6 +11,7 @@ from utils.config import load_config
 
 cfg = load_config()
 symbol = cfg["data"]["symbol"]
+global model
 
 # Load processed, training, and testing data
 df = pd.read_csv(cfg["data"]["processed_path"], parse_dates=["date"]).set_index("date")
@@ -40,9 +41,9 @@ predicted_states = model.predict(X_test)
 
 # Combine probabilities and state info into a single DataFrame
 probs_states_df = pd.DataFrame({
-	"low_vol_prob": state_prob[:,0],
-	"high_vol_prob": state_prob[:,1],
-	"state": predicted_states
+  "low_vol_prob": state_prob[:,0],
+  "high_vol_prob": state_prob[:,1],
+  "state": predicted_states
 }, index=df_test.index)
 transition_matrix = pd.DataFrame(model.transmat_.copy(), index=["low_vol", "high_vol"], columns=["low_vol", "high_vol"])
 
@@ -57,26 +58,26 @@ probs_states_df = probs_states_df.join(df, how='inner')
 
 # Saving the transition matrix, probabilities, and predicted states
 for path, df, desc in [
-	(transition_matrix_path, transition_matrix, "Transition matrix of HMM states"),
-	(probs_states_path, probs_states_df, "State probabilities and predicted HMM state for each date (0=low_vol, 1=high_vol)")
+  (transition_matrix_path, transition_matrix, "Transition matrix of HMM states"),
+  (probs_states_path, probs_states_df, "State probabilities and predicted HMM state for each date (0=low_vol, 1=high_vol)")
 ]:
-	p = Path(path)
-	p.parent.mkdir(parents=True, exist_ok=True)
-	df.to_csv(p, index=True)
-	csv_info.append({
-		"filename": str(p),
-		"description": desc,
-		"n_rows": len(df),
-		"n_columns": len(df.columns),
-		"columns": list(df.columns),
-		"created_at": datetime.now().isoformat()
-	})
+  p = Path(path)
+  p.parent.mkdir(parents=True, exist_ok=True)
+  df.to_csv(p, index=True)
+  csv_info.append({
+    "filename": str(p),
+    "description": desc,
+    "n_rows": len(df),
+    "n_columns": len(df.columns),
+    "columns": list(df.columns),
+    "created_at": datetime.now().isoformat()
+  })
 
 # Save metadata JSON
 meta_path = f"reports/{symbol}/tables/{symbol}_metadata.json"
 with open(meta_path, "w") as f:
-	json.dump({
-		"csv_files": csv_info,
-		"generated_at": datetime.now().isoformat(),
-		"symbol": symbol
-	}, f, indent=2)
+  json.dump({
+    "csv_files": csv_info,
+    "generated_at": datetime.now().isoformat(),
+    "symbol": symbol
+  }, f, indent=2)

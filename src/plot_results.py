@@ -59,3 +59,4 @@ p = Path(f"reports/{symbol}/figures/{cfg['data']['symbol']}_price_and_return_wit
 p.parent.mkdir(parents=True, exist_ok=True)
 plt.savefig(p)
 plt.close()
+

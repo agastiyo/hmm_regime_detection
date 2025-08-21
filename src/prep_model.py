@@ -20,4 +20,4 @@ train_data.reset_index().to_csv(p, index=False)
 
 p = Path(f"data/temp/{symbol}/{symbol}_full_data.csv")
 p.parent.mkdir(parents=True, exist_ok=True)
-full_data = full_data.reset_index().to_csv(p, index=False)
+full_data.reset_index().to_csv(p, index=False)

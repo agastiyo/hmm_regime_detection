@@ -7,7 +7,9 @@ scripts = [
     "src/process_returns.py",
     "src/prep_model.py",
     "src/run_model.py",
-    "src/plot_results.py"
+    "src/plot_results.py",
+    "src/forecast.py",
+    "src/plot_forecast.py"
 ]
 
 def main():
