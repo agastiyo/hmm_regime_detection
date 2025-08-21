@@ -4,18 +4,18 @@ from pathlib import Path
 
 # Define the scripts to run in order
 scripts = [
-    "src/process_returns.py",
-    "src/prep_model.py",
-    "src/run_model.py",
-    "src/plot_results.py",
-    "src/forecast.py",
-    "src/plot_forecast.py"
+    ("src/process_returns.py", "Processing returns..."),
+    ("src/prep_model.py", "Preparing model..."),
+    ("src/run_model.py", "Running model..."),
+    ("src/plot_results.py", "Plotting results..."),
+    ("src/forecast.py", "Forecasting..."),
+    ("src/plot_forecast.py", "Plotting forecast...")
 ]
 
 def main():
     for script in scripts:
-        print(f"Running {script}...")
-        result = subprocess.run([sys.executable, script], capture_output=True, text=True)
+        print(f"\n{script[1]}")
+        result = subprocess.run([sys.executable, script[0]], capture_output=True, text=True)
         print(result.stdout)
         if result.returncode != 0:
             print(f"Error running {script}:")
