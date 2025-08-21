@@ -15,10 +15,10 @@ symbol = cfg["data"]["symbol"]
 # Load processed, training, and testing data
 df = pd.read_csv(cfg["data"]["processed_path"], parse_dates=["date"]).set_index("date")
 
-df_train = pd.read_csv(f"data/temp/{symbol}_train_data.csv", parse_dates=["date"]).set_index("date")
+df_train = pd.read_csv(f"data/temp/{symbol}/{symbol}_train_data.csv", parse_dates=["date"]).set_index("date")
 X_train = df_train.values.reshape(-1, 1)
 
-df_test = pd.read_csv(f"data/temp/{symbol}_full_data.csv", parse_dates=["date"]).set_index("date")
+df_test = pd.read_csv(f"data/temp/{symbol}/{symbol}_full_data.csv", parse_dates=["date"]).set_index("date")
 X_test = df_test.values.reshape(-1, 1)
 
 # Running the 2 state Gaussian HMM
@@ -49,8 +49,8 @@ transition_matrix = pd.DataFrame(model.transmat_.copy(), index=["low_vol", "high
 # Save CSVs and collect metadata
 csv_info = []
 
-transition_matrix_path = f"reports/tables/{symbol}_transition_matrix.csv"
-probs_states_path = f"reports/tables/{symbol}_probs_states.csv"
+transition_matrix_path = f"reports/{symbol}/tables/{symbol}_transition_matrix.csv"
+probs_states_path = f"reports/{symbol}/tables/{symbol}_probs_states.csv"
 
 # Merge the probabilities with the original DataFrame
 probs_states_df = probs_states_df.join(df, how='inner')

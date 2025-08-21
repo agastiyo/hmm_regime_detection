@@ -6,7 +6,8 @@ from pathlib import Path
 scripts = [
     "src/process_returns.py",
     "src/prep_model.py",
-    "src/run_model.py"
+    "src/run_model.py",
+    "src/plot_results.py"
 ]
 
 def main():

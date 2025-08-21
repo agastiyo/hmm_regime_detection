@@ -14,10 +14,10 @@ train_data = returns.iloc[:split_index].dropna()
 full_data = returns.dropna()
 
 # Saving the training data to CSV files
-p = Path(f"data/temp/{symbol}_train_data.csv")
+p = Path(f"data/temp/{symbol}/{symbol}_train_data.csv")
 p.parent.mkdir(parents=True, exist_ok=True)
 train_data.reset_index().to_csv(p, index=False)
 
-p = Path(f"data/temp/{symbol}_full_data.csv")
+p = Path(f"data/temp/{symbol}/{symbol}_full_data.csv")
 p.parent.mkdir(parents=True, exist_ok=True)
 full_data = full_data.reset_index().to_csv(p, index=False)
