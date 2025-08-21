@@ -8,7 +8,7 @@ symbol = cfg['data']['symbol']
 price = cfg['data']['price_col']
 
 df = pd.read_csv(f"reports/{symbol}/tables/{symbol}_probs_states.csv", parse_dates=['date'], usecols=['date','state',price]).set_index('date')
-init_money = df[price].iloc[0]  # Initial investment amount is one share
+init_money = df[price].iloc[0]*1000  # Initial investment amount is 1000 shares
 
 # Testing 4 strategies: Buy-and-Hold, Risk-Averse, Risk-Seeking, and Dollar-Cost Averaging
 
@@ -43,8 +43,9 @@ titles = ['Buy-and-Hold', 'Risk-Averse', 'Risk-Seeking', 'Dollar-Cost Averaging'
 for i, ax in enumerate(axes.flatten()):
   # Plot strategy portfolio value
   ax.plot(df.index, df[strategies[i]], label=titles[i], color='black')
+  axb = ax.twinx()
   # Plot price on secondary y-axis
-  ax.plot(df.index, df[price], label='Price', color='gray', alpha=0.5)
+  axb.plot(df.index, df[price], label='Price', color='gray', alpha=0.5)
   # Plot regime (state) as scatter
   low_vol = df['state'] == 0
   high_vol = df['state'] == 1
@@ -53,9 +54,12 @@ for i, ax in enumerate(axes.flatten()):
   ax.scatter(df.index[high_vol], df[strategies[i]][high_vol], 
          color='red', marker='o', label='High Volatility', s=10)
   ax.set_title(titles[i])
-  ax.set_ylabel("Value ($)")
+  ax.set_ylabel("Portfolio Value")
+  axb.set_ylabel("Share Price")
   # Legends
   lines, labels = ax.get_legend_handles_labels()
+  lines2, labels2 = axb.get_legend_handles_labels()
+  ax.legend(lines + lines2, labels + labels2, loc='upper left')
   ax.legend(loc='upper left')
 
 axes[-1, 0].set_xlabel("Date")
