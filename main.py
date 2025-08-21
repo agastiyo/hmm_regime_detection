@@ -9,7 +9,8 @@ scripts = [
     ("src/run_model.py", "Running model..."),
     ("src/plot_results.py", "Plotting results..."),
     ("src/forecast.py", "Forecasting..."),
-    ("src/plot_forecast.py", "Plotting forecast...")
+    ("src/plot_forecast.py", "Plotting forecast..."),
+    ("src/backtest.py", "Running backtest...")
 ]
 
 def main():
