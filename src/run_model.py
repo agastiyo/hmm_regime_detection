@@ -73,7 +73,7 @@ for path, df, desc in [
 	})
 
 # Save metadata JSON
-meta_path = f"reports/tables/{symbol}_metadata.json"
+meta_path = f"reports/{symbol}/tables/{symbol}_metadata.json"
 with open(meta_path, "w") as f:
 	json.dump({
 		"csv_files": csv_info,

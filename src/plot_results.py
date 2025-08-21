@@ -1,4 +1,5 @@
 import pandas as pd
+from pathlib import Path
 import matplotlib.pyplot as plt
 from utils.config import load_config
 
@@ -54,5 +55,7 @@ ax2.set_ylabel(returns)
 ax2.grid(True)
 
 plt.tight_layout()
-plt.savefig(f"reports/{symbol}/figures/{cfg['data']['symbol']}_price_and_return_with_regime.png")
+p = Path(f"reports/{symbol}/figures/{cfg['data']['symbol']}_price_and_return_with_regime.png")
+p.parent.mkdir(parents=True, exist_ok=True)
+plt.savefig(p)
 plt.close()
