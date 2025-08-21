@@ -21,8 +21,17 @@ def load_prices(in_path):
   df = df[~df.index.duplicated(keep='first')]
   df = df.drop_duplicates()
   
+  # Convert all columns except 'date' to numeric
   numeric_cols = [c for c in df.columns if c != "date"]
   df = df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
+  
+  # Replace empty strings with NaN
+  df.replace(r'^\s*$', np.nan, regex=True, inplace=True)
+  # Drop rows where all columns are NaN
+  df.dropna(how='all', inplace=True)
+  
+  # Remove all times before 2000-03-20
+  df = df.loc[df.index > pd.Timestamp("2000-03-20")]
   
   return df
 
