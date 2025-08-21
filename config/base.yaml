@@ -1,11 +1,15 @@
 data:
-  symbol: QQQ
-  raw_path: data/raw/QQQ_full.csv
-  processed_path: data/processed/QQQ_full_processed.csv
-  price_col: close
+  symbol: SAMPLE
+  raw_path: data/raw/SAMPLE_1000d.csv
+  processed_path: data/processed/SAMPLE_1000d_processed.csv
+  price_col: adj_close
 
 model:
   target_col: log_ret
   train_frac: 0.6
   n_iter: 100
   seed: 42
+
+forecasting:
+  n_steps: 500 # Number of days to forecast
+  n_sims: 1000 # Number of simulations per day for forecasting
