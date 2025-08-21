@@ -1,7 +1,5 @@
 data/temp*
 
-reports/*
-
 tex_files/*
 
 __pycache__/

@@ -1,0 +1,37 @@
+{
+  "csv_files": [
+    {
+      "filename": "reports/SAMPLE/tables/SAMPLE_transition_matrix.csv",
+      "description": "Transition matrix of HMM states",
+      "n_rows": 2,
+      "n_columns": 2,
+      "columns": [
+        "low_vol",
+        "high_vol"
+      ],
+      "created_at": "2025-08-20T17:09:24.363512"
+    },
+    {
+      "filename": "reports/SAMPLE/tables/SAMPLE_probs_states.csv",
+      "description": "State probabilities and predicted HMM state for each date (0=low_vol, 1=high_vol)",
+      "n_rows": 999,
+      "n_columns": 11,
+      "columns": [
+        "low_vol_prob",
+        "high_vol_prob",
+        "state",
+        "open",
+        "high",
+        "low",
+        "close",
+        "adj_close",
+        "volume",
+        "simple_ret",
+        "log_ret"
+      ],
+      "created_at": "2025-08-20T17:09:24.382902"
+    }
+  ],
+  "generated_at": "2025-08-20T17:09:24.383316",
+  "symbol": "SAMPLE"
+}
