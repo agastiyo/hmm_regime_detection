@@ -3,6 +3,7 @@
 This project detects market regimes (calm/low volatility vs. turbulent/high volatility) in a single asset using a Hidden Markov Model (HMM). It provides a full pipeline from raw data to regime classification, visualization, and reporting.
 
 ## Features
+
 - **Automated pipeline**: From raw CSV to processed data, model training, and result plots.
 - **Configurable**: Easily adjust data paths, model parameters, and target columns via YAML.
 - **Extensible**: Add new datasets or change model settings with minimal code changes.
@@ -69,6 +70,7 @@ This will:
 ## How to Add a New Dataset
 
 1. **Place your raw CSV** in `data/raw/` (e.g., `data/raw/NEW_ASSET.csv`).
+    - Make sure the raw CSV has a column titles `dates` for indexing.
 2. **Update `config/base.yaml`**:
     - `symbol`: Set to your asset's name (e.g., `NEW_ASSET`)
     - `raw_path`: Path to your new CSV
