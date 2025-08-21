@@ -1,8 +1,8 @@
 data:
-  symbol: SAMPLE
-  raw_path: data/raw/SAMPLE_1000d.csv
-  processed_path: data/processed/SAMPLE_1000d_processed.csv
-  price_col: adj_close
+  symbol: QQQ
+  raw_path: data/raw/QQQ_full.csv
+  processed_path: data/processed/QQQ_full_processed.csv
+  price_col: close
 
 model:
   target_col: log_ret
