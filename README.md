@@ -1,6 +1,12 @@
+
 # HMM Regime Detection
 
-This project detects market regimes (calm/low volatility vs. turbulent/high volatility) in a single asset using a Hidden Markov Model (HMM). It provides a full pipeline from raw data to regime classification, visualization, and reporting.
+This project aims to:
+
+- **Classify past asset price data as either volatile or non-volatile** (high or low volatility regimes) using a Hidden Markov Model (HMM).
+- **Extrapolate the model into the future using Monte Carlo simulation methods** to predict the likely price path and uncertainty at later periods of time.
+
+The pipeline detects market regimes in a single asset, visualizes regime switches, and produces probabilistic price forecasts based on the learned model.
 
 ## Features
 
@@ -36,7 +42,14 @@ pip install -r requirements.txt
 
 ### 1. Configure the Pipeline
 
-Edit `config/base.yaml` to set your data paths, symbol, and model parameters. Example:
+Edit `config/base.yaml` to set:
+
+- The asset symbol (e.g., `QQQ`)
+- Paths to your raw and processed data
+- The price column name (e.g., `close`)
+- Model parameters (target column, train/test split, number of iterations, random seed)
+
+Example config:
 
 ```yaml
 data:
@@ -52,7 +65,9 @@ model:
   seed: 42
 ```
 
-### 2. Run the Full Pipeline
+### 2. Run the Pipeline
+
+From the project root, run:
 
 ```bash
 python main.py
@@ -62,39 +77,44 @@ This will:
 
 - Process raw data and compute returns
 - Prepare training and full datasets
-- Train the HMM and predict regimes
+- Train the HMM and classify each date as high or low volatility
+- Forecast future prices using Monte Carlo simulation
 - Generate plots and output tables in `reports/`
 
 ---
 
-## How to Add a New Dataset
+## Adding a New Dataset
 
-1. **Place your raw CSV** in `data/raw/` (e.g., `data/raw/NEW_ASSET.csv`).
-    - Make sure the raw CSV has a column titles `dates` for indexing.
-2. **Update `config/base.yaml`**:
-    - `symbol`: Set to your asset's name (e.g., `NEW_ASSET`)
-    - `raw_path`: Path to your new CSV
-    - `processed_path`: Where to save processed data (e.g., `data/processed/NEW_ASSET_processed.csv`)
-    - `price_col`: The column name for price in your CSV
-3. **(Optional) Adjust model parameters** as needed.
-4. **Run the pipeline**:
+1. Place your raw CSV in `data/raw/` (e.g., `data/raw/NEW_ASSET.csv`).
 
-    ```bash
-    python main.py
-    ```
+   - The CSV must have a `date` column and a price column (e.g., `close`).
 
-5. **Results** will be saved in `reports/NEW_ASSET/`.
+2. Edit `config/base.yaml`:
+
+   - Set `symbol` to your asset's name (e.g., `NEW_ASSET`)
+   - Set `raw_path` and `processed_path` accordingly
+   - Set `price_col` to match your CSV
+
+3. (Optional) Adjust model parameters as needed
+4. Run the pipeline:
+
+  ```bash
+  python main.py
+  ```
+
+1. Results will be saved in `reports/NEW_ASSET/`
 
 ---
 
 ## Script Details
 
-- `main.py`: Runs the full pipeline in order (processing, prep, modeling, plotting).
-- `config/base.yaml`: Central place for all configuration.
-- `src/process_returns.py`: Loads raw data, computes returns, saves processed data.
-- `src/prep_model.py`: Splits data into train/test, saves to temp files.
-- `src/run_model.py`: Trains HMM, predicts regimes, saves results.
-- `src/plot_results.py`: Plots price, returns, and regime states.
+- `main.py`: Runs the full pipeline (processing, prep, modeling, forecasting, plotting)
+- `config/base.yaml`: Central configuration file
+- `src/process_returns.py`: Loads raw data, computes returns, saves processed data
+- `src/prep_model.py`: Splits data into train/test, saves to temp files
+- `src/run_model.py`: Trains HMM, predicts regimes, saves results
+- `src/forecast.py`: Runs Monte Carlo price forecasting
+- `src/plot_results.py` and `src/plot_forecast.py`: Plot price, returns, regimes, and forecasts
 
 ---
 
@@ -102,9 +122,9 @@ This will:
 
 After running, you will find:
 
-- **Processed data**: `data/processed/`
-- **Temp files**: `data/temp/<SYMBOL>/`
-- **Reports**: `reports/<SYMBOL>/tables/` and `reports/<SYMBOL>/figures/`
+- Processed data: `data/processed/`
+- Temp files: `data/temp/<SYMBOL>/`
+- Reports: `reports/<SYMBOL>/tables/` (CSVs) and `reports/<SYMBOL>/figures/` (plots)
 
 ---
 
@@ -112,6 +132,4 @@ After running, you will find:
 
 - The pipeline expects your CSV to have a `date` column and a price column (e.g., `close`).
 - All configuration is handled via `config/base.yaml`.
-- For custom analysis, see the `notebooks/` folder.
-
----
+- For custom analysis or exploration, see the `notebooks/` folder.
