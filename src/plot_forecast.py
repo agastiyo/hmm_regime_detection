@@ -13,13 +13,17 @@ hist_df = pd.read_csv(f"reports/{symbol}/tables/{symbol}_probs_states.csv", pars
 
 # Load forecast
 forecast_df = pd.read_csv(f"reports/{symbol}/tables/{symbol}_forecast.csv", parse_dates=["index"]).set_index("index")
+low_vol = forecast_df["state"] == 0
+high_vol = forecast_df["state"] == 1
 
 # Plot
 plt.figure(figsize=(14, 7))
 plt.plot(hist_df.index, hist_df[price_col], label="Historical Price", color="black")
-plt.plot(forecast_df.index, forecast_df["point_forecast"], label="Forecast (mean)", color="blue")
-plt.plot(forecast_df.index, forecast_df["median_forecast"], label="Forecast (median)", color="orange", linestyle="--")
-plt.fill_between(forecast_df.index, forecast_df["p05"], forecast_df["p95"], color="blue", alpha=0.2, label="5-95% Quantile")
+plt.plot(forecast_df.index, forecast_df["point_forecast"], label="Forecast (mean)", color="gray")
+plt.plot(forecast_df.index, forecast_df["median_forecast"], label="Forecast (median)", color="gray", linestyle="--")
+plt.fill_between(forecast_df.index, forecast_df["p05"], forecast_df["p95"], color="gray", alpha=0.2, label="5-95% Quantile")
+plt.scatter(forecast_df.index[low_vol], forecast_df["point_forecast"][low_vol], color="green", label="Low Volatility",s=10)
+plt.scatter(forecast_df.index[high_vol], forecast_df["point_forecast"][high_vol], color="red", label="High Volatility", s=10)
 
 plt.xlabel("Date")
 plt.ylabel("Price")

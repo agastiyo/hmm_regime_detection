@@ -62,9 +62,10 @@ paths = regime_probs
 forecast_dates = pd.date_range(start=df.index[-1], periods=n_steps+1, freq='B')
 price_forecast_df = pd.DataFrame(price_paths, index=forecast_dates, columns=["point_forecast", "median_forecast", "p05", "p95"])
 prob_forecast_df = pd.DataFrame(paths, index=forecast_dates, columns=["low_vol_prob", "high_vol_prob"])
+state_forecast_df = pd.DataFrame(np.argmax(paths, axis=1), index=forecast_dates, columns=["state"])
 
 # Combine into a single DataFrame
-forecast_df = pd.concat([prob_forecast_df, price_forecast_df], axis=1)
+forecast_df = pd.concat([prob_forecast_df, price_forecast_df, state_forecast_df], axis=1)
 
 # Save the forecasted prices and probabilities to CSV
 p = Path(f"reports/{symbol}/tables/{symbol}_forecast.csv")
