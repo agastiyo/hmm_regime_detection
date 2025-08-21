@@ -1,7 +1,7 @@
 data:
-  symbol: QQQ # Ticker symbol (e.g., 'QQQ')
-  raw_path: data/raw/QQQ_full.csv # Path to raw data
-  processed_path: data/processed/QQQ_full_processed.csv # Path to processed data
+  symbol: DOW # Ticker symbol (e.g., 'QQQ')
+  raw_path: data/raw/DOW.csv # Path to raw data
+  processed_path: data/processed/DOW_processed.csv # Path to processed data
   price_col: close # Column name for price data
 
 model:
@@ -11,5 +11,5 @@ model:
   seed: 42 # Random seed for reproducibility and the meaning of life ;)
 
 forecasting:
-  n_steps: 1825 # Number of days to forecast
-  n_sims: 100 # Number of simulations per day for forecasting
+  n_steps: 300 # Number of days to forecast (simulations take slightly longer per day)
+  n_sims: 1 # Number of simulations per day for forecasting

@@ -1,7 +1,7 @@
 {
   "csv_files": [
     {
-      "filename": "reports/QQQ/tables/QQQ_transition_matrix.csv",
+      "filename": "reports/DOW/tables/DOW_transition_matrix.csv",
       "description": "Transition matrix of HMM states",
       "n_rows": 2,
       "n_columns": 2,
@@ -9,12 +9,12 @@
         "low_vol",
         "high_vol"
       ],
-      "created_at": "2025-08-20T23:15:50.646123"
+      "created_at": "2025-08-20T23:17:54.778776"
     },
     {
-      "filename": "reports/QQQ/tables/QQQ_probs_states.csv",
+      "filename": "reports/DOW/tables/DOW_probs_states.csv",
       "description": "State probabilities and predicted HMM state for each date (0=low_vol, 1=high_vol)",
-      "n_rows": 6489,
+      "n_rows": 1614,
       "n_columns": 10,
       "columns": [
         "low_vol_prob",
@@ -28,9 +28,9 @@
         "simple_ret",
         "log_ret"
       ],
-      "created_at": "2025-08-20T23:15:50.747673"
+      "created_at": "2025-08-20T23:17:54.804344"
     }
   ],
-  "generated_at": "2025-08-20T23:15:50.747842",
-  "symbol": "QQQ"
+  "generated_at": "2025-08-20T23:17:54.804500",
+  "symbol": "DOW"
 }
