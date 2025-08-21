@@ -1,4 +1,9 @@
-data/temp*
+data/*
+!data/raw/SAMPLE_1000d.csv
+!data/processed/SAMPLE_1000d_processed.csv
+
+reports/*
+!reports/SAMPLE
 
 tex_files/*
 
