@@ -1,15 +1,15 @@
 data:
-  symbol: DOW # Ticker symbol (e.g., 'QQQ')
-  raw_path: data/raw/DOW.csv # Path to raw data
-  processed_path: data/processed/DOW_processed.csv # Path to processed data
+  symbol: TLT # Ticker symbol (e.g., 'QQQ')
+  raw_path: data/raw/TLT.csv # Path to raw data
+  processed_path: data/processed/TLT_processed.csv # Path to processed data
   price_col: close # Column name for price data
 
 model:
   target_col: log_ret # Column name for returns (use log returns)
   train_frac: 0.6 # Fraction of data to use for training
-  n_iter: 100 # Number of iterations for model fitting
-  seed: 42 # Random seed for reproducibility and the meaning of life ;)
+  n_iter: 1000 # Number of iterations for model fitting
+  seed: 21 # Random seed for reproducibility
 
 forecasting:
-  n_steps: 30 # Number of days to forecast (simulations take slightly longer per day)
+  n_steps: 1000 # Number of days to forecast
   n_sims: 1000 # Number of simulations per day for forecasting

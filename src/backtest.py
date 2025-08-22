@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 cfg = load_config()
 symbol = cfg['data']['symbol']
 price = cfg['data']['price_col']
-transaction_cost = 0.001  # Transaction cost per trade
+transaction_cost = 0.001  # Transaction cost per trade (0.1%)
 
 df = pd.read_csv(f"reports/{symbol}/tables/{symbol}_probs_states.csv", parse_dates=['date'], usecols=['date','state',price]).set_index('date')
 init_money = df[price].iloc[0] * (1-transaction_cost)  # Initial investment amount is 1 share of the asset minus transaction cost
