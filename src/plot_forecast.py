@@ -7,6 +7,7 @@ cfg = load_config()
 symbol = cfg["data"]["symbol"]
 price_col = cfg["data"]["price_col"]
 n_steps = cfg["forecasting"]["n_steps"]
+n_sims = cfg["forecasting"]["n_sims"]
 
 # Load historical prices
 hist_df = pd.read_csv(f"reports/{symbol}/tables/{symbol}_probs_states.csv", parse_dates=["date"]).set_index("date")
@@ -26,15 +27,10 @@ plt.scatter(forecast_df.index[low_vol], forecast_df["point_forecast"][low_vol], 
 plt.scatter(forecast_df.index[high_vol], forecast_df["point_forecast"][high_vol], color="red", label="High Volatility", s=10)
 
 plt.xlabel("Date")
-plt.ylabel("Price")
-plt.title(f"{symbol} Price Forecast")
+plt.ylabel("Closing Price")
+plt.title(f"{symbol} Price Forecast ({n_sims} simulations/day)")
 plt.legend()
 plt.grid(True)
-
-# Show a little before the forecast starts and all of the forecast
-x_min = forecast_df.index[0] - pd.Timedelta(days=n_steps*0.5)
-x_max = forecast_df.index[-1]
-plt.xlim(left=x_min, right=x_max)
 
 # Save
 out_path = Path(f"reports/{symbol}/figures/{symbol}_forecast.png")

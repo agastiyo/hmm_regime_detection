@@ -12,11 +12,11 @@ symbol = cfg["data"]["symbol"]
 df = pd.read_csv(f"reports/{symbol}/tables/{symbol}_probs_states.csv", parse_dates=["date"]).set_index("date")
 
 # Create a single figure with two subplots sharing the x-axis
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 14), sharex=True, gridspec_kw={'height_ratios': [2, 1]})
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 8), sharex=True, gridspec_kw={'height_ratios': [2, 1]})
 
 # Price with Regime Coloring
 ax1.plot(df.index, df[price], label=price, color='black', linewidth=1.5)
-ax1.set_ylabel(price)
+ax1.set_ylabel("Closing Price")
 
 # Overlay volume on a secondary y-axis, but scale it down for better visualization
 volume = df["volume"]
@@ -51,7 +51,7 @@ colors = df["state"].map({0: "green", 1: "red"})
 ax2.bar(df.index, df[returns], color=colors, width=1.0)
 ax2.set_title(f"{cfg['data']['symbol']} Returns with Regime Coloring")
 ax2.set_xlabel("Date")
-ax2.set_ylabel(returns)
+ax2.set_ylabel("Log Returns")
 ax2.grid(True)
 
 plt.tight_layout()
@@ -64,7 +64,7 @@ plt.close()
 plt.figure(figsize=(10, 6))
 plt.hist(df[returns], bins=50, color='blue', alpha=0.7, edgecolor='black')
 plt.title(f"{cfg['data']['symbol']} Returns Histogram")
-plt.xlabel("Returns")
+plt.xlabel("Log Returns")
 plt.ylabel("Frequency")
 plt.grid(axis='y', alpha=0.75)
 plt.tight_layout()

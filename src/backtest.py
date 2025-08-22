@@ -59,7 +59,7 @@ for i, ax in enumerate(axes.flatten()):
   # Plot strategy portfolio value
   ax.plot(df.index, df[strategies[i]], label=titles[i], color='black')
   # Plot price on secondary y-axis
-  ax.plot(df.index, df[price], label='Price', color='gray', alpha=0.5)
+  ax.plot(df.index, df[price], label='Closing Price', color='gray', alpha=0.5)
   # Plot regime (state) as scatter
   low_vol = df['state'] == 0
   high_vol = df['state'] == 1
@@ -68,7 +68,7 @@ for i, ax in enumerate(axes.flatten()):
   ax.scatter(df.index[high_vol], df[strategies[i]][high_vol], 
          color='red', marker='o', label='High Volatility', s=10)
   ax.set_title(titles[i])
-  ax.set_ylabel("Value ($)")
+  ax.set_ylabel("Price / Portfolio Value")
   # Legends
   
   ax.legend(loc='upper left')
