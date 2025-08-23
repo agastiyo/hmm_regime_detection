@@ -78,8 +78,6 @@ The logarithmic returns were fed into a 2-state Gaussian HMM with the following 
 | `n_iter` | `1000` | Number of iterations performed by the model for fitting |
 | `seed` | `21` | Random seed for reproducability |
 
-
-
 The model outputs:
 
 - Hidden states & state probabilities (low and high volatility)  
@@ -131,28 +129,122 @@ $$
 
 ### Visualizations
 
-- [Insert graphs of returns colored by regime for each asset]  
-- [Insert transition matrices for each asset]  
-- [Insert table of expected regime durations]  
+Graphs of the price and log returns for each asset, including regime colorings, transition matrices, and expected regime durations:
+
+**BRK.A**
+
+![alt text](assets/regimes/BRK.A_price_and_return_with_regime.png)
+
+|  |  |  |
+|---|---|---|
+|| **Low** | **High** |
+| **Low** | 0.9793016728134806 | 0.020698327186519472 |
+| **High** | 0.08088766518658039 | 0.9191123348134196 |
+
+**DIA**
+
+![alt text](assets/regimes/DIA_price_and_return_with_regime.png)
+
+|  |  |  |
+|---|---|---|
+| | **Low** | **High** |
+| **Low** | 0.9940068227080981 | 0.005993177291901875 |
+| **High** | 0.01798460020332571 | 0.9820153997966743 |
+
+**GLD**
+
+![alt text](assets/regimes/GLD_price_and_return_with_regime.png)
+
+|  |  |  |
+|---|---|---|
+| | **Low** | **High** |
+| **Low** | 0.9892374581708647 | 0.010762541829135337 |
+| **High** | 0.035921152044868246 | 0.9640788479551318 |
+
+**IBM**
+
+![alt text](assets/regimes/IBM_price_and_return_with_regime.png)
+
+|  |  |  |
+|---|---|---|
+|| **Low** | **High** |
+| **Low** | 0.9852084222060226 | 0.014791577793977365 |
+| **High** | 0.04815306856358633 | 0.9518469314364137 |
+
+**META**
+
+![alt text](assets/regimes/META_price_and_return_with_regime.png)
+
+|  |  |  |
+|---|---|---|
+| | **Low** | **High** |
+| **Low** | 0.9639726950017415 | 0.036027304998258514 |
+| **High** | 0.14922216216275938 | 0.8507778378372406 |
+
+**QQQ**
+
+![alt text](assets/regimes/QQQ_price_and_return_with_regime.png)
+
+|  |  |  |
+|---|---|---|
+| | **Low** | **High** |
+| **Low** | 0.9965072027909997 | 0.0034927972090002626 |
+| **High** | 0.010040484299280486 | 0.9899595157007195 |
+
+**SPY**
+
+![alt text](assets/regimes/SPY_price_and_return_with_regime.png)
+
+|  |  |  |
+|---|---|---|
+|  | **Low** | **High** |
+| **Low** | 0.9928505940710867 | 0.007149405928913339 |
+| **High** | 0.01968721268286422 | 0.9803127873171358 |
+
+**TLT**
+
+![alt text](assets/regimes/TLT_price_and_return_with_regime.png)
+
+|  |  |  |
+|---|---|---|
+|  | **Low** | **High** |
+| **Low** | 0.9956434309314541 | 0.0043565690685459174 |
+| **High** | 0.011831958720722067 | 0.9881680412792779 |
+
+---
+
+### Expected Regime Durations
+
+| Asset | Low Regime (days) | High Regime (days) |
+|-------|-------------------|--------------------|
+| BRK.A | 48.4 | 12.4 |
+| DIA   | 166.9 | 55.6 |
+| GLD   | 93.0 | 27.8 |
+| IBM   | 67.5 | 20.5 |
+| META  | 27.8 | 6.7  |
+| QQQ   | 285.7 | 99.5 |
+| SPY   | 140.4 | 50.7 |
+| TLT   | 225.6 | 84.6 |
 
 ---
 
 ### Analysis
 
 yadda yadda
-___
+
+---
 
 ## Backtesting
 
 ### Strategies
 
 With the regimes identified, four trading strategies were backtested.  
-Each strategy began with **1000 shares (or equivalent fractional purchases in DCA)** at the start of the period. A transaction cost of 0.1% was applied for each buy/sell action.  
+Each strategy began with **1 share (or equivalent fractional purchases in DCA)** at the start of the period. A transaction cost of 0.1% was applied for each buy/sell action.  
 
 **Baseline Strategies:**
 
-1. **Buy-and-Hold (B&H):** Buy 1000 shares at the beginning and hold until the end.  
-2. **Dollar-Cost Averaging (DCA):** Buy equal fractions daily such that 1000 shares are accumulated by the end.  
+1. **Buy-and-Hold (B&H):** Buy a share at the beginning and hold until the end.  
+2. **Dollar-Cost Averaging (DCA):** Start with enough to buy 1 share, but only invest a fraction each day such that all the money is invested by the end.
 
 **Volatility-Aware Strategies:**
 
@@ -162,19 +254,6 @@ Each strategy began with **1000 shares (or equivalent fractional purchases in DC
 ---
 
 ### Visualizations
-
-Preliminary results suggest:
-
-- **Risk-Averse** produced the strongest performance.  
-- **Buy-and-Hold** followed closely.  
-- **Dollar-Cost Averaging** underperformed relative to Buy-and-Hold.  
-- **Risk-Seeking** was the weakest strategy.  
-
----
-
-### Analysis
-
-yadda yadda
 
 ---
 
@@ -220,6 +299,17 @@ $$
 
 - [Insert table of results: FV, log return, CAGR, MDD, Calmar Ratio by asset and strategy]  
 - [Insert portfolio value plots comparing all 4 strategies per asset]  
+
+---
+
+### Analysis
+
+Preliminary results suggest:
+
+- **Risk-Averse** produced the strongest performance.  
+- **Buy-and-Hold** followed closely.  
+- **Dollar-Cost Averaging** underperformed relative to Buy-and-Hold.  
+- **Risk-Seeking** was the weakest strategy.
 
 ---
 
