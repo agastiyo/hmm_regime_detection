@@ -131,7 +131,7 @@ $$
 
 Graphs of the price and log returns for each asset, including regime colorings, transition matrices, and expected regime durations:
 
-**BRK.A**
+**BRK.A:**
 
 ![alt text](assets/regimes/BRK.A_price_and_return_with_regime.png)
 
@@ -141,7 +141,7 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 | **Low** | 0.9793016728134806 | 0.020698327186519472 |
 | **High** | 0.08088766518658039 | 0.9191123348134196 |
 
-**DIA**
+**DIA:**
 
 ![alt text](assets/regimes/DIA_price_and_return_with_regime.png)
 
@@ -151,7 +151,7 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 | **Low** | 0.9940068227080981 | 0.005993177291901875 |
 | **High** | 0.01798460020332571 | 0.9820153997966743 |
 
-**GLD**
+**GLD:**
 
 ![alt text](assets/regimes/GLD_price_and_return_with_regime.png)
 
@@ -161,7 +161,7 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 | **Low** | 0.9892374581708647 | 0.010762541829135337 |
 | **High** | 0.035921152044868246 | 0.9640788479551318 |
 
-**IBM**
+**IBM:**
 
 ![alt text](assets/regimes/IBM_price_and_return_with_regime.png)
 
@@ -171,7 +171,7 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 | **Low** | 0.9852084222060226 | 0.014791577793977365 |
 | **High** | 0.04815306856358633 | 0.9518469314364137 |
 
-**META**
+**META:**
 
 ![alt text](assets/regimes/META_price_and_return_with_regime.png)
 
@@ -181,7 +181,7 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 | **Low** | 0.9639726950017415 | 0.036027304998258514 |
 | **High** | 0.14922216216275938 | 0.8507778378372406 |
 
-**QQQ**
+**QQQ:**
 
 ![alt text](assets/regimes/QQQ_price_and_return_with_regime.png)
 
@@ -191,7 +191,7 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 | **Low** | 0.9965072027909997 | 0.0034927972090002626 |
 | **High** | 0.010040484299280486 | 0.9899595157007195 |
 
-**SPY**
+**SPY:**
 
 ![alt text](assets/regimes/SPY_price_and_return_with_regime.png)
 
@@ -201,7 +201,7 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 | **Low** | 0.9928505940710867 | 0.007149405928913339 |
 | **High** | 0.01968721268286422 | 0.9803127873171358 |
 
-**TLT**
+**TLT:**
 
 ![alt text](assets/regimes/TLT_price_and_return_with_regime.png)
 
@@ -215,7 +215,7 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 
 ### Expected Regime Durations
 
-| Asset | Low Regime (days) | High Regime (days) |
+| Asset | Low Volume (days) | High Volume (days) |
 |-------|-------------------|--------------------|
 | BRK.A | 48.4 | 12.4 |
 | DIA   | 166.9 | 55.6 |
@@ -255,17 +255,35 @@ Each strategy began with **1 share (or equivalent fractional purchases in DCA)**
 
 ### Visualizations
 
+![alt text](assets/backtests/BRK.A_backtest_results.png)
+
+![alt text](assets/backtests/DIA_backtest_results.png)
+
+![alt text](assets/backtests/GLD_backtest_results.png)
+
+![alt text](assets/backtests/IBM_backtest_results.png)
+
+![alt text](assets/backtests/META_backtest_results.png)
+
+![alt text](assets/backtests/QQQ_backtest_results.png)
+
+![alt text](assets/backtests/SPY_backtest_results.png)
+
+![alt text](assets/backtests/TLT_backtest_results.png)
+
 ---
 
 ### Performance Metrics
 
 The following metrics were used to evaluate performance:
 
-- **Final Value (FV):**
+- **Final Value:**
 
 $$
 FV = \text{Portfolio value at final date}
 $$
+
+where $( IV )$ = initial value
 
 - **Log Return:**
   
@@ -273,15 +291,23 @@ $$
 R_{\text{log}} = \ln\left(\frac{FV}{IV}\right)
 $$
 
-- **Compound Annual Growth Rate (CAGR):**
+- **Annulaized Volatility:**
+
+$$
+V = \sigma\sqrt{252}
+$$
+
+where $\sigma$ = standar deviation of returns
+
+- **Compound Annual Growth Rate:**
   
 $$
 CAGR = \left(\frac{FV}{IV}\right)^{\frac{1}{Y}} - 1
 $$
 
-where $( IV )$ = initial value, $( Y )$ = number of years.  
+where $( Y )$ = number of years.  
 
-- **Maximum Drawdown (MDD):**
+- **Maximum Drawdown:**
 
 $$
 MDD = \max_{t} \left( \frac{\text{Peak}_t - \text{Trough}_t}{\text{Peak}_t} \right)
@@ -297,8 +323,77 @@ $$
 
 ### Tables and Graphs
 
-- [Insert table of results: FV, log return, CAGR, MDD, Calmar Ratio by asset and strategy]  
-- [Insert portfolio value plots comparing all 4 strategies per asset]  
+**BRK.A:**
+
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Annualized Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+|---|---|---|---|---|---|---|
+| **Buy and Hold** | 731507.54 | 1237.31 | 21.36 | 10.76 | -51.5 | 0.209 |
+| **Dollar Cost Averaging** | 290798.49 | 431.62 | 28.86 | 6.81 | -48.6 | 0.14 |
+| **Risk Averse** | 338106.35 | 518.11 | 13.01 | 7.44 | -34.4 | 0.216 |
+| **Risk Seeking** | 93924.87 | 71.71 | 16.95 | 2.15 | -50.7 | 0.042 |
+
+**DIA:**
+
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+|---|---|---|---|---|---|---|
+| **Buy and Hold** | 448.91 | 313.36 | 18.45 | 5.75 | -53.8 | 0.107 |
+| **Dollar Cost Averaging** | 332.92 | 206.56 | 26.78 | 4.52 | -45.5 | 0.099 |
+| **Risk Averse** | 1176.76 | 983.58 | 10.39 | 9.85 | -20.7 | 0.476 |
+| **Risk Seeking** | 37.67 | -65.31 | 15.25 | -4.09 | -75.0 | -0.055 |
+
+**GLD:**
+
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+|---|---|---|---|---|---|---|
+| **Buy and Hold** | 306.98 | 585.54 | 17.57 | 9.74 | -45.6 | 0.214 |
+| **Dollar Cost Averaging** | 124.06 | 177.04 | 27.78 | 5.04 | -30.0 | 0.168 |
+| **Risk Averse** | 382.86 | 754.98 | 12.93 | 10.91 | -29.5 | 0.369 |
+| **Risk Seeking** | 33.51 | -25.17 | 11.9 | -1.39 | -46.2 | -0.03 |
+
+**IBM:**
+
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+|---|---|---|---|---|---|---|
+| **Buy and Hold** | 239.14 | 109.31 | 25.98 | 2.95 | -58.8 | 0.05 |
+| **Dollar Cost Averaging** | 220.21 | 92.75 | 32.54 | 2.62 | -42.8 | 0.061 |
+| **Risk Averse** | 757.46 | 562.98 | 16.81 | 7.74 | -36.5 | 0.212 |
+| **Risk Seeking** | 28.86 | -74.74 | 19.83 | -5.28 | -78.7 | -0.067 |
+
+**META:**
+
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+|---|---|---|---|---|---|---|
+| **Buy and Hold** | 746.97 | 2095.04 | 39.82 | 26.31 | -76.7 | 0.343 |
+| **Dollar Cost Averaging** | 248.65 | 630.67 | 47.76 | 16.23 | -75.6 | 0.215 |
+| **Risk Averse** | 1816.25 | 5237.2 | 26.06 | 35.09 | -38.5 | 0.912 |
+| **Risk Seeking** | 11.11 | -67.36 | 30.08 | -8.12 | -80.2 | -0.101 |
+
+**QQQ:**
+
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+|---|---|---|---|---|---|---|
+| **Buy and Hold** | 565.33 | 395.91 | 26.57 | 6.52 | -83.0 | 0.079 |
+| **Dollar Cost Averaging** | 977.53 | 757.48 | 32.65 | 8.84 | -47.8 | 0.185 |
+| **Risk Averse** | 7697.4 | 6652.11 | 14.28 | 18.07 | -17.4 | 1.04 |
+| **Risk Seeking** | 7.8 | -93.16 | 22.38 | -10.03 | -94.2 | -0.107 |
+
+**SPY:**
+
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+|---|---|---|---|---|---|---|
+| **Buy and Hold** | 637.47 | 324.72 | 19.44 | 5.87 | -56.5 | 0.104 |
+| **Dollar Cost Averaging** | 580.35 | 286.66 | 27.45 | 5.48 | -48.2 | 0.114 |
+| **Risk Averse** | 2788.44 | 1757.8 | 10.63 | 12.21 | -16.7 | 0.733 |
+| **Risk Seeking** | 31.02 | -79.34 | 16.27 | -6.03 | -81.7 | -0.074 |
+
+**TLT:**
+
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+|---|---|---|---|---|---|---|
+| **Buy and Hold** | 86.32 | 6.02 | 14.47 | 0.25 | -51.8 | 0.005 |
+| **Dollar Cost Averaging** | 66.51 | -18.32 | 25.18 | -0.87 | -44.5 | -0.02 |
+| **Risk Averse** | 142.19 | 74.64 | 9.8 | 2.45 | -20.5 | 0.119 |
+| **Risk Seeking** | 47.25 | -41.96 | 10.65 | -2.33 | -57.9 | -0.04 |
 
 ---
 
@@ -325,7 +420,23 @@ After simulating all paths for a given timestep, I computed the mean, median, an
 
 The process was then repeated for subsequent timesteps, with each path evolving forward from its own prior simulated price.
 
-[Insert graphs of forecasts here]
+### Visualizations
+
+![alt text](assets/forecasts/BRK.A_forecast.png)
+
+![alt text](assets/forecasts/DIA_forecast.png)
+
+![alt text](assets/forecasts/GLD_forecast.png)
+
+![alt text](assets/forecasts/IBM_forecast.png)
+
+![alt text](assets/forecasts/META_forecast.png)
+
+![alt text](assets/forecasts/QQQ_forecast.png)
+
+![alt text](assets/forecasts/SPY_forecast.png)
+
+![alt text](assets/forecasts/TLT_forecast.png)
 
 **Findings:**
 
