@@ -29,7 +29,7 @@ plt.scatter(forecast_df.index[high_vol], forecast_df["point_forecast"][high_vol]
 plt.xlabel("Date")
 plt.ylabel("Closing Price")
 plt.title(f"{symbol} Price Forecast ({n_sims} simulations/day)")
-plt.legend()
+plt.legend(loc="upper left")
 plt.grid(True)
 
 # Save
