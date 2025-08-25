@@ -5,11 +5,11 @@ August 2025
 
 ## Introduction
 
-In this project, I trained a 2-state Gaussian Hidden Markov Model (HMM) on historical asset data to identify windows of low and high volatility.  
-The choice of a 2-state model was deliberate: categorizing periods as either calm or turbulent provides an intuitive concept for beginners in trading. Markets often oscillate between “quiet” and “volatile” regimes, making regime-switching models especially useful.  
+New traders often begin with widely recommended strategies that require minimal monitoring of daily market movements. While these approaches are not inherently flawed, introducing a modest level of strategy complexity can potentially enhance returns. Simple strategies, such as those that take into account volatility in the market, are an easily accessible next step for traders to grow their skills. This project aims to determine if taking this step into slightly more complex strategies would also yield noticeable improvements in returns.
 
-**Research Question:**  
-Do volatility-aware strategies outperform “beginner” strategies over long periods of time?
+To accomplish this, I trained a 2-state Gaussian Hidden Markov Model (HMM) on historical asset data to identify windows of low and high volatility, then backtested two "beginner" and two volatility-aware strategies to compare their outcome over a number of years.
+
+The key research question is whether volatility-aware strategies can consistently outperform traditional beginner-friendly approaches, especially over long investment horizons where market regimes shift.
 
 ---
 
@@ -17,11 +17,11 @@ Do volatility-aware strategies outperform “beginner” strategies over long pe
 
 A total of 8 assets were chosen for this project:
 
-- **Indexes:** SPY, QQQ, DIA  
-- **Stocks:** BRK.A, IBM, META  
-- **Commodities and Bonds:** GLD, TLT  
+- **Indexes:** SPY, QQQ, DIA (Represent broad U.S. market exposure)
+- **Stocks:** BRK.A, IBM, META (Provide examples of large-cap equities with varying volatility and sector exposure)
+- **Commodities and Bonds:** GLD, TLT (Capture alternative asset classes that behave differently under stress)
 
-This assures a broad sample of assets to test the strategies.  
+This assured a broad sample of assets to test the strategies.  
 
 **Note:** One limitation of my model was its inability to handle stock splits correctly. Therefore, I restricted the analysis to assets with little or no history of splits.  
 
@@ -38,45 +38,25 @@ Data was collected from AlphaVantage and included the following columns of daily
 
 For this project, I focused on **close-to-close daily returns**. Data preprocessing included:
 
-- Removing duplicates and empty rows  
+- Removing duplicates and empty rows
 - Converting empty strings to `NaN`  
 - Casting all numerical values into float or integer types  
 - Parsing all dates from string to datetime
-- Removing any data before March 20, 2000 to avoid any stock splits  
+- Removing any data before March 20, 2000 to avoid stock splits  
 
 ---
 
 ## Methodology
 
-### Returns
-
-For each asset, simple and logarithmic returns were calculated (excluding the first day):
-
-- **Simple Return:**
-  
-$$
-R_t = \frac{P_t - P_{t-1}}{P_{t-1}}
-$$
-
-- **Logarithmic Return:**
-  
-$$
-r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)
-$$
-
-where $( P_t )$ is the closing price at time $( t )$.  
-
----
-
-### Hidden Markov Model
-
-The logarithmic returns were fed into a 2-state Gaussian HMM with the following parameters:
+For each asset, simple and logarithmic returns were calculated (excluding the first day). The logarithmic returns were fed into a 2-state Gaussian HMM with the following parameters:
 
 | Parameter | Used Value | Description |
 |---|---|---|
 | `train_frac` | `0.6` | Fraction of the data to use for model training |
 | `n_iter` | `1000` | Number of iterations performed by the model for fitting |
 | `seed` | `21` | Random seed for reproducability |
+
+The 2-state Gaussian HMM was chosen due to the interpratibility of results by newer traders as well as its capability to distinguish between high and low volatility states.
 
 The model outputs:
 
@@ -100,36 +80,18 @@ An example from the dataset for TLT:
 
 | date | low_vol_prob | high_vol_prob | state | open | high | low | close | volume | simple_ret | log_ret |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `2010-04-29` | `0.4791464688036577` | `0.5208535311948629` | `0` | `90.86` | `91.2225` | `90.52` | `91.08` | `4067200` | `0.0041896361631752` | `0.0041808840744478` |
-| `2010-04-30` | `0.348648119323207` | `0.651351880676007` | `0` | `91.28` | `92.17` | `91.11` | `92.13` | `6924800` | `0.011528326745718` | `0.0114623819253017` |
-| `2010-05-03` | `0.24610484755502313` | `0.7538951524459493` | `0` | `91.42` | `92.02` | `91.28` | `91.69` | `4211800` | `-0.0047758601975469` | `-0.0047873010590312` |
-| `2010-05-04` | `0.08936771295922045` | `0.9106322870400323` | `1` | `92.81` | `93.47` | `92.56` | `93.34` | `11054800` | `0.0179954193478024` | `0.0178354184598602` |
-| `2010-05-05` | `0.053552482199500887` | `0.9464475178001164` | `1` | `94.06` | `94.85` | `93.35` | `93.89` | `12219100` | `0.0058924362545531` | `0.0058751437487864` |
-| `2010-05-06` | `0.0005024857235497041` | `0.999497514275762` | `1` | `94.16` | `100.0` | `93.78` | `96.79` | `19578200` | `0.0308872084354032` | `0.0304197988905412` |
-
-**Transition matrix:**
-
-$$
-T =
-\begin{bmatrix}
-P(L \to L) & P(L \to H) \\
-P(H \to L) & P(H \to H)
-\end{bmatrix}
-$$
-
-where $( L )$ = low volatility, $( H )$ = high volatility.  
-
-**Expected regime duration:**
-
-$$
-\text{Expected duration in state } i = \frac{1}{1 - P(i \to i)}
-$$
+| 2010-04-29 | 0.4791464688036577 | 0.5208535311948629 | 0 | 90.86 | 91.2225 | 90.52 | 91.08 | 4067200 | 0.0041896361631752 | 0.0041808840744478 |
+| 2010-04-30 | 0.348648119323207 | 0.651351880676007 | 0 | 91.28 | 92.17 | 91.11 | 92.13 |6924800 | 0.011528326745718 | 0.0114623819253017 |
+| 2010-05-03 | 0.24610484755502313 | 0.7538951524459493 | 0 | 91.42 | 92.02 | 91.28 | 91.69 | 4211800 | -0.0047758601975469 | -0.0047873010590312 |
+| 2010-05-04 | 0.08936771295922045 | 0.9106322870400323 | 1 | 92.81 | 93.47 | 92.56 | 93.34 | 11054800 | 0.0179954193478024 | 0.0178354184598602 |
+| 2010-05-05 | 0.053552482199500887 | 0.9464475178001164 | 1 | 94.06 | 94.85 | 93.35 | 93.89 |12219100 | 0.0058924362545531 | 0.0058751437487864 |
+| 2010-05-06 | 0.0005024857235497041 | 0.999497514275762 | 1 | 94.16 | 100.0 | 93.78 | 96.79 | 19578200 | 0.0308872084354032 | 0.0304197988905412 |
 
 ---
 
 ### Visualizations
 
-Graphs of the price and log returns for each asset, including regime colorings, transition matrices, and expected regime durations:
+Graphs of the price and log returns for each asset, including regime colorings and the system's transition matrix:
 
 **BRK.A:**
 
@@ -215,7 +177,7 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 
 ### Expected Regime Durations
 
-| Asset | Low Volume (days) | High Volume (days) |
+| Asset | Low Volatility (days) | High Volatility (days) |
 |-------|-------------------|--------------------|
 | BRK.A | 48.4 | 12.4 |
 | DIA   | 166.9 | 55.6 |
@@ -230,7 +192,11 @@ Graphs of the price and log returns for each asset, including regime colorings, 
 
 ### Analysis
 
-yadda yadda
+In all cases, the model seemed to favor the Low Volatility State, expecting it to last longer than the high volatility state for every asset.
+
+Furthermore, the transition matrices tended to be extremely sticky, assigning very high probabilities for the volatility to remain in the state it is already in, with a slight advantage to being in a low volatility state. In fact, most high volatility states were concentrated around 2001, 2008, and 2020, suggesting that it takes real world factors for the market to change volatility state.
+
+It should be noted, however, that sticky transitions matrices are a common feature of financial time-series HMMs.
 
 ---
 
@@ -243,13 +209,15 @@ Each strategy began with **1 share (or equivalent fractional purchases in DCA)**
 
 **Baseline Strategies:**
 
-1. **Buy-and-Hold (B&H):** Buy a share at the beginning and hold until the end.  
-2. **Dollar-Cost Averaging (DCA):** Start with enough to buy 1 share, but only invest a fraction each day such that all the money is invested by the end.
+1. **Buy-and-Hold (B&H):** Buy a share at the beginning and hold until the end. Benchmark passive strategy, requires no regime awareness.
+2. **Dollar-Cost Averaging (DCA):** Start with enough to buy 1 share, but only invest a fraction each day such that all the money is invested by the end. Reduces timing risk by spreading entry, but not volatility-adaptive.
 
 **Volatility-Aware Strategies:**
 
-1. **Risk-Averse:** Fully invested during low volatility; exit to cash during high volatility.  
-2. **Risk-Seeking:** Fully invested during high volatility; exit to cash during low volatility.  
+1. **Risk-Averse:** Fully invested during low volatility; exit to cash during high volatility. Emphasizes capital preservation by avoiding turbulent markets.
+2. **Risk-Seeking:** Fully invested during high volatility; exit to cash during low volatility. Attempts to capture outsized gains during volatility with the risk of high losses.
+
+**Note:** Volatility-aware strategies had a reaction delay on one day for realism, e.g. if the market became volatile after a low volatility period, the risk-averse strategy would liquidate its assets the day after.
 
 ---
 
@@ -273,55 +241,16 @@ Each strategy began with **1 share (or equivalent fractional purchases in DCA)**
 
 ---
 
-### Performance Metrics
+### Metrics
 
-The following metrics were used to evaluate performance:
+To evaluate the effectiveness of each backtesting strategy, six standard performance metrics were applied. Together, they capture both absolute returns and risk-adjusted outcomes:
 
-- **Final Value:**
-
-$$
-FV = \text{Portfolio value at final date}
-$$
-
-where $( IV )$ = initial value
-
-- **Log Return:**
-  
-$$
-R_{\text{log}} = \ln\left(\frac{FV}{IV}\right)
-$$
-
-- **Annulaized Volatility:**
-
-$$
-V = \sigma\sqrt{252}
-$$
-
-where $\sigma$ = standar deviation of returns
-
-- **Compound Annual Growth Rate:**
-  
-$$
-CAGR = \left(\frac{FV}{IV}\right)^{\frac{1}{Y}} - 1
-$$
-
-where $( Y )$ = number of years.  
-
-- **Maximum Drawdown:**
-
-$$
-MDD = \max_{t} \left( \frac{\text{Peak}_t - \text{Trough}_t}{\text{Peak}_t} \right)
-$$
-
-- **Calmar Ratio:**
-
-$$
-\text{Calmar} = \frac{CAGR}{MDD}
-$$
-
----
-
-### Tables and Graphs
+- **Final Value:** The ending portfolio value at the conclusion of the backtest. Provides a straightforward measure of overall profitability but does not account for risk.  
+- **Total Log Return:** The cumulative logarithmic return relative to the initial investment. Useful for comparing growth across assets and strategies on a normalized scale.  
+- **Annualized Volatility:** The yearly standard deviation of portfolio returns. Reflects the degree of variability and risk associated with the strategy.  
+- **CAGR (Compound Annual Growth Rate):** The average annualized growth rate over the backtest horizon. Demonstrates how effectively the strategy generated sustained returns over time.  
+- **Max Drawdown:** The largest peak-to-trough decline in portfolio value. Highlights the worst-case loss an investor would have faced.  
+- **Calmar Ratio:** The ratio of CAGR to Max Drawdown. Serves as a risk-adjusted performance measure, rewarding strategies that balance high growth with limited drawdowns.  
 
 **BRK.A:**
 
@@ -334,7 +263,7 @@ $$
 
 **DIA:**
 
-| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Annualized Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
 |---|---|---|---|---|---|---|
 | **Buy and Hold** | 448.91 | 313.36 | 18.45 | 5.75 | -53.8 | 0.107 |
 | **Dollar Cost Averaging** | 332.92 | 206.56 | 26.78 | 4.52 | -45.5 | 0.099 |
@@ -343,7 +272,7 @@ $$
 
 **GLD:**
 
-| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Annualized Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
 |---|---|---|---|---|---|---|
 | **Buy and Hold** | 306.98 | 585.54 | 17.57 | 9.74 | -45.6 | 0.214 |
 | **Dollar Cost Averaging** | 124.06 | 177.04 | 27.78 | 5.04 | -30.0 | 0.168 |
@@ -352,7 +281,7 @@ $$
 
 **IBM:**
 
-| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Annualized Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
 |---|---|---|---|---|---|---|
 | **Buy and Hold** | 239.14 | 109.31 | 25.98 | 2.95 | -58.8 | 0.05 |
 | **Dollar Cost Averaging** | 220.21 | 92.75 | 32.54 | 2.62 | -42.8 | 0.061 |
@@ -361,7 +290,7 @@ $$
 
 **META:**
 
-| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Annualized Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
 |---|---|---|---|---|---|---|
 | **Buy and Hold** | 746.97 | 2095.04 | 39.82 | 26.31 | -76.7 | 0.343 |
 | **Dollar Cost Averaging** | 248.65 | 630.67 | 47.76 | 16.23 | -75.6 | 0.215 |
@@ -370,7 +299,7 @@ $$
 
 **QQQ:**
 
-| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Annualized Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
 |---|---|---|---|---|---|---|
 | **Buy and Hold** | 565.33 | 395.91 | 26.57 | 6.52 | -83.0 | 0.079 |
 | **Dollar Cost Averaging** | 977.53 | 757.48 | 32.65 | 8.84 | -47.8 | 0.185 |
@@ -379,7 +308,7 @@ $$
 
 **SPY:**
 
-| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Annualized Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
 |---|---|---|---|---|---|---|
 | **Buy and Hold** | 637.47 | 324.72 | 19.44 | 5.87 | -56.5 | 0.104 |
 | **Dollar Cost Averaging** | 580.35 | 286.66 | 27.45 | 5.48 | -48.2 | 0.114 |
@@ -388,7 +317,7 @@ $$
 
 **TLT:**
 
-| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
+| **Strategy** | **Final Value ($)** | **Total Log Return (%)** | **Annualized Volatility (%)** | **CAGR (%)** | **Max Drawdown (%)** | **Calmar Ratio** |
 |---|---|---|---|---|---|---|
 | **Buy and Hold** | 86.32 | 6.02 | 14.47 | 0.25 | -51.8 | 0.005 |
 | **Dollar Cost Averaging** | 66.51 | -18.32 | 25.18 | -0.87 | -44.5 | -0.02 |
@@ -399,12 +328,15 @@ $$
 
 ### Analysis
 
-Preliminary results suggest:
+The backtesting results highlight clear distinctions in performance across the four strategies:
 
-- **Risk-Averse** produced the strongest performance.  
-- **Buy-and-Hold** followed closely.  
-- **Dollar-Cost Averaging** underperformed relative to Buy-and-Hold.  
-- **Risk-Seeking** was the weakest strategy.
+- **Risk-Averse:** This strategy consistently delivered the strongest risk-adjusted outcomes. Although it did not always achieve the absolute highest returns—owing to missed gains during high-volatility periods—it reliably generated positive performance with comparatively low volatility. As a result, it achieved the highest Calmar Ratios across most assets, underscoring its effectiveness in balancing growth with capital preservation.  
+
+- **Buy-and-Hold:** Performance closely tracked the long-term trajectory of the underlying assets. While generally producing solid positive returns, this strategy exhibited greater exposure to drawdowns compared to the risk-averse approach. It remains a viable baseline, but offered less stability and, in most cases, weaker efficiency in terms of risk-adjusted performance.  
+
+- **Dollar-Cost Averaging:** This method consistently underperformed relative to Buy-and-Hold. While the staggered investment schedule helped cushion the impact of market downturns, it also diminished the benefits of early compounding. Over extended horizons, this trade-off resulted in lower final returns and weaker overall growth efficiency.  
+
+- **Risk-Seeking:** This was the weakest of the four strategies. Although occasional high-volatility periods generated short-term gains, these were typically erased by subsequent losses. The results reinforce the notion that heightened market volatility is more often associated with elevated risk of drawdowns rather than sustained opportunity for excess returns.  
 
 ---
 
@@ -440,30 +372,36 @@ The process was then repeated for subsequent timesteps, with each path evolving 
 
 **Findings:**
 
-- Point predictions were unreliable due to oversimplification from the 2-state model.  
-- Transition matrices tended to be “sticky,” causing the system to fall into long equilibrium states without capturing the actual regime switching observed in real data.  
-- Forecasting cannot account for exogenous real-world shocks (e.g., earnings surprises, geopolitical events).  
+Clearly, the forecasts were very general, with all of them defaulting to a low-volatility state with very high uncertainty after only a short period of time.
+
+The clear trend is that the model predicts the market to continuously increase over time, barring any world events that it could not predict. This general trend is true, though point predictions were unreliable.
+
+It is also possible that a simple 2-state Gaussian HMM is too much of an oversimplification to accurately point predict the market. HMMs are not typically used for this purpose, and as expected, they were unable to offer any insight other than that the market will steadily increase if it does not experience any shocks from real world factors.
 
 ---
 
 ## Discussion
 
-Key limitations:  
+This project demonstrated that Hidden Markov Models can successfully identify volatility regimes in financial assets and that incorporating these regimes into trading strategies leads to tangible differences in performance. The main findings were:
 
-- A 2-state model may oversimplify market dynamics.  
-- Forecast accuracy was hindered by sticky transition probabilities.  
-- The model works retrospectively but struggles prospectively.  
+- **Volatility Regimes:** The HMM consistently identified persistent low-volatility states, with high-volatility states clustering around major financial crises (2001, 2008, 2020). Transition matrices were extremely "sticky," suggesting regimes are long-lasting and only shift under external shocks.
+- **Strategy Performance:**  
+  - **Risk-Averse** strategies were the strongest overall, producing the highest Calmar Ratios and combining solid growth with controlled risk.  
+  - **Buy-and-Hold** remained a competitive baseline but was less efficient in balancing growth against drawdowns.  
+  - **Dollar-Cost Averaging** underperformed relative to Buy-and-Hold, suggesting that spreading entry timing did not compensate for foregone compounding.  
+  - **Risk-Seeking** strategies were consistently the weakest, experiencing catastrophic drawdowns and poor long-term performance.
+- **Forecasting:** Using HMMs for forward-looking prediction proved limited. Simulations quickly defaulted to low-volatility states with widening uncertainty bands, confirming that the model is more useful for retrospective regime classification than for prospective forecasting.
 
-Nevertheless, results suggest that incorporating volatility regimes can improve trading strategies compared to baseline methods.  
+Overall, the evidence supports the conclusion that **volatility-aware strategies can outperform traditional beginner approaches over long horizons if employed correctly**, but predictive use of HMMs remains constrained by their structural limitations.
 
 ---
 
 ## Future Work
 
-- Test shorter time horizons (e.g., intraday or minute-level data).  
-- Expand to 3- or 4-state Gaussian HMMs to capture finer regimes.  
-- Compare with alternative regime-switching models (e.g., Markov-Switching GARCH).  
-- Incorporate transaction cost sensitivity analysis.  
-- Explore reinforcement learning approaches to adapt strategies dynamically.  
+Several directions could improve both the modeling and strategy evaluation:
 
----
+- Test shorter horizons (e.g., intraday data) → to evaluate whether volatility-aware strategies hold under high-frequency conditions where the returns are more random.
+
+- Expand to 3- or 4-state HMMs → to differentiate between moderate and extreme volatility regimes.
+
+- Compare with alternative regime-switching models (e.g., Markov-Switching GARCH).
