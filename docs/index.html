@@ -169,7 +169,7 @@
       <h3>Visualizations</h3>
       <p>Graphs of the price and log returns for each asset, including regime colorings and the system's transition matrix:</p>
 
-      <!-- Asset grid for 8 assets: each card keeps exact words but improves layout -->
+      <!-- Asset grid for 8 assets -->
       <div class="asset-grid">
         <div class="asset-card">
           <p><strong>BRK.A:</strong></p>
@@ -339,7 +339,7 @@
       <p><strong>Note:</strong> Volatility-aware strategies had a reaction delay on one day for realism, e.g. if the market became volatile after a low volatility period, the risk-averse strategy would liquidate its assets the day after.</p>
 
       <h3>Visualizations</h3>
-      <div class="gallery-grid">
+      <div class="asset-grid">
         <figure><img src="assets/backtests/BRK.A_backtest_results.png" alt="alt text"></figure>
         <figure><img src="assets/backtests/DIA_backtest_results.png" alt="alt text"></figure>
         <figure><img src="assets/backtests/GLD_backtest_results.png" alt="alt text"></figure>
@@ -483,7 +483,7 @@
       <p>After simulating all paths for a given timestep, I computed the mean, median, and the 5th and 95th percentile prices across the ensemble to summarize the forecast distribution.</p>
       <p>The process was then repeated for subsequent timesteps, with each path evolving forward from its own prior simulated price.</p>
       <h3>Visualizations</h3>
-      <div class="gallery-grid">
+      <div class="asset-grid">
         <figure><img src="assets/forecasts/BRK.A_forecast.png" alt="alt text"></figure>
         <figure><img src="assets/forecasts/DIA_forecast.png" alt="alt text"></figure>
         <figure><img src="assets/forecasts/GLD_forecast.png" alt="alt text"></figure>
@@ -493,7 +493,7 @@
         <figure><img src="assets/forecasts/SPY_forecast.png" alt="alt text"></figure>
         <figure><img src="assets/forecasts/TLT_forecast.png" alt="alt text"></figure>
       </div>
-      <p><strong>Findings:</strong></p>
+      <h3>Findings</h3>
       <p>Clearly, the forecasts were very general, with all of them defaulting to a low-volatility state with very high uncertainty after only a short period of time.</p>
       <p>The clear trend is that the model predicts the market to continuously increase over time, barring any world events that it could not predict. This general trend is true, though point predictions were unreliable.</p>
       <p>It is also possible that a simple 2-state Gaussian HMM is too much of an oversimplification to accurately point predict the market. HMMs are not typically used for this purpose, and as expected, they were unable to offer any insight other than that the market will steadily increase if it does not experience any shocks from real world factors.</p>
