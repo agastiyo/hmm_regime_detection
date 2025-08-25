@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hidden Markov Models for Volatility-Aware Strategies — Final</title>
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121824;
+    --panel-2: #0f1520;
+    --text: #e7edf5;
+    --muted: #a9b6c7;
+    --accent: #66d9ef;
+    --accent-2: #a390ff;
+    --border: #223047;
+  }
+  html, body { background: var(--bg); color: var(--text); margin: 0; }
+  body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; line-height: 1.6; }
+  .container { max-width: 1150px; margin: 0 auto; padding: 3rem 1.25rem; }
+
+  h1, h2, h3, h4 { line-height: 1.25; margin: 1.6rem 0 0.6rem; font-weight: 750; letter-spacing: .2px; }
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.6rem; border-top: 1px solid var(--border); padding-top: 1.2rem; margin-top: 2rem; }
+  h3 { font-size: 1.25rem; color: var(--accent); }
+  h4 { font-size: 1.05rem; color: var(--accent-2); }
+
+  p { margin: 0.75rem 0; }
+  strong { font-weight: 700; }
+  em { color: var(--muted); }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  /* Lists */
+  ul, ol { padding-left: 1.25rem; }
+  li { margin: .4rem 0; }
+
+  /* Panels */
+  .panel { background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: 12px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; background: #0e141f; }
+  th, td { padding: .65rem .75rem; border-bottom: 1px solid var(--border); text-align: left; }
+  thead th { position: sticky; top: 0; background: #101727; z-index: 1; }
+  tbody tr:nth-child(even) { background: #0c121c; }
+  tbody tr:hover { background: #0f1826; }
+  code { background: #0f1725; padding: .2rem .4rem; border-radius: 6px; border: 1px solid var(--border); }
+
+  /* Media (images) */
+  img { max-width: 100%; height: auto; border-radius: 12px; display: block; border: 1px solid var(--border); background: #0a0f18; }
+  figure { margin: 0; }
+  figcaption { color: var(--muted); font-size: .9rem; margin-top: .5rem; }
+
+  /* Grids for better readability */
+  .asset-grid, .gallery-grid { display: grid; gap: 1rem; }
+  .asset-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .gallery-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  @media (min-width: 720px) {
+    .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1100px) {
+    .gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  .asset-card { padding: 1rem; border-radius: 16px; border: 1px solid var(--border); background: radial-gradient(1200px 600px at 20% -10%, rgba(102,217,239,.07), transparent 40%), linear-gradient(180deg, rgba(163,144,255,.05), rgba(10,15,22,.4)); }
+  .asset-card p { margin-top: .25rem; }
+  .spacer { height: .5rem; }
+
+  /* Small caps subtitle */
+  .subtitle { color: var(--muted); font-variant-caps: all-small-caps; letter-spacing: .15em; }
+
+  /* Links (in case) */
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <article>
+
+      <h1>Hidden Markov Models for Volatility-Aware Strategies</h1>
+      <p><strong>By Agastya Gaur</strong><br/>August 2025</p>
+
+      <h2>Introduction</h2>
+      <p>New traders often begin with widely recommended strategies that require minimal monitoring of daily market movements. While these approaches are not inherently flawed, introducing a modest level of strategy complexity can potentially enhance returns. Simple strategies, such as those that take into account volatility in the market, are an easily accessible next step for traders to grow their skills. This project aims to determine if taking this step into slightly more complex strategies would also yield noticeable improvements in returns.</p>
+      <p>To accomplish this, I trained a 2-state Gaussian Hidden Markov Model (HMM) on historical asset data to identify windows of low and high volatility, then backtested two "beginner" and two volatility-aware strategies to compare their outcome over a number of years.</p>
+      <p>The key research question is whether volatility-aware strategies can consistently outperform traditional beginner-friendly approaches, especially over long investment horizons where market regimes shift.</p>
+      <hr/>
+
+      <h2>Data and Preprocessing</h2>
+      <p>A total of 8 assets were chosen for this project:</p>
+      <ul>
+        <li><strong>Indexes:</strong> SPY, QQQ, DIA (Represent broad U.S. market exposure)</li>
+        <li><strong>Stocks:</strong> BRK.A, IBM, META (Provide examples of large-cap equities with varying volatility and sector exposure)</li>
+        <li><strong>Commodities and Bonds:</strong> GLD, TLT (Capture alternative asset classes that behave differently under stress)</li>
+      </ul>
+      <p>This assured a broad sample of assets to test the strategies.</p>
+      <p><strong>Note:</strong> One limitation of my model was its inability to handle stock splits correctly. Therefore, I restricted the analysis to assets with little or no history of splits.</p>
+      <p>Data was collected from AlphaVantage and included the following columns of daily data:</p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr><th>Column Title</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>date</code></td><td>The date of the row data</td></tr>
+          <tr><td><code>open</code></td><td>The opening price of the asset</td></tr>
+          <tr><td><code>high</code></td><td>The highest price of the asset</td></tr>
+          <tr><td><code>low</code></td><td>The lowest price of the asset</td></tr>
+          <tr><td><code>close</code></td><td>The closing price of the asset (used for returns)</td></tr>
+          <tr><td><code>volume</code></td><td>The volume of the asset traded</td></tr>
+        </tbody>
+      </table></div>
+      <p>For this project, I focused on <strong>close-to-close daily returns</strong>. Data preprocessing included:</p>
+      <ul>
+        <li>Removing duplicates and empty rows</li>
+        <li>Converting empty strings to <code>NaN</code></li>
+        <li>Casting all numerical values into float or integer types</li>
+        <li>Parsing all dates from string to datetime</li>
+        <li>Removing any data before March 20, 2000 to avoid stock splits</li>
+      </ul>
+      <hr/>
+
+      <h2>Methodology</h2>
+      <p>For each asset, simple and logarithmic returns were calculated (excluding the first day). The logarithmic returns were fed into a 2-state Gaussian HMM with the following parameters:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Parameter</th><th>Used Value</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>train_frac</code></td><td><code>0.6</code></td><td>Fraction of the data to use for model training</td></tr>
+          <tr><td><code>n_iter</code></td><td><code>1000</code></td><td>Number of iterations performed by the model for fitting</td></tr>
+          <tr><td><code>seed</code></td><td><code>21</code></td><td>Random seed for reproducability</td></tr>
+        </tbody>
+      </table></div>
+      <p>The 2-state Gaussian HMM was chosen due to the interpratibility of results by newer traders as well as its capability to distinguish between high and low volatility states.</p>
+      <p>The model outputs:</p>
+      <ul>
+        <li>Hidden states &amp; state probabilities (low and high volatility)</li>
+        <li>Transition matrix</li>
+        <li>Mean and Variance data for each state</li>
+      </ul>
+      <p><strong>Final Dataset:</strong></p>
+      <p>After getting results from the model, the final dataset contained the following columns in addition to the original columns from the data:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Column Title</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>low_vol_prob</code></td><td>Probability of the asset being in a low-volatility state on the given date</td></tr>
+          <tr><td><code>high_vol_prob</code></td><td>Probability of the asset being in a low-volatility state on the given date</td></tr>
+          <tr><td><code>state</code></td><td>State of the asset (0 = low_vol, 1 = high_vol)</td></tr>
+          <tr><td><code>simple_ret</code></td><td>Simple return from the previous day</td></tr>
+          <tr><td><code>log_ret</code></td><td>Logarithmic Return from the previous day</td></tr>
+        </tbody>
+      </table></div>
+      <p>An example from the dataset for TLT:</p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr>
+            <th>date</th><th>low_vol_prob</th><th>high_vol_prob</th><th>state</th><th>open</th><th>high</th><th>low</th><th>close</th><th>volume</th><th>simple_ret</th><th>log_ret</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>2010-04-29</td><td>0.4791464688036577</td><td>0.5208535311948629</td><td>0</td><td>90.86</td><td>91.2225</td><td>90.52</td><td>91.08</td><td>4067200</td><td>0.0041896361631752</td><td>0.0041808840744478</td></tr>
+          <tr><td>2010-04-30</td><td>0.348648119323207</td><td>0.651351880676007</td><td>0</td><td>91.28</td><td>92.17</td><td>91.11</td><td>92.13</td><td>6924800</td><td>0.011528326745718</td><td>0.0114623819253017</td></tr>
+          <tr><td>2010-05-03</td><td>0.24610484755502313</td><td>0.7538951524459493</td><td>0</td><td>91.42</td><td>92.02</td><td>91.28</td><td>91.69</td><td>4211800</td><td>-0.0047758601975469</td><td>-0.0047873010590312</td></tr>
+          <tr><td>2010-05-04</td><td>0.08936771295922045</td><td>0.9106322870400323</td><td>1</td><td>92.81</td><td>93.47</td><td>92.56</td><td>93.34</td><td>11054800</td><td>0.0179954193478024</td><td>0.0178354184598602</td></tr>
+          <tr><td>2010-05-05</td><td>0.053552482199500887</td><td>0.9464475178001164</td><td>1</td><td>94.06</td><td>94.85</td><td>93.35</td><td>93.89</td><td>12219100</td><td>0.0058924362545531</td><td>0.0058751437487864</td></tr>
+          <tr><td>2010-05-06</td><td>0.0005024857235497041</td><td>0.999497514275762</td><td>1</td><td>94.16</td><td>100.0</td><td>93.78</td><td>96.79</td><td>19578200</td><td>0.0308872084354032</td><td>0.0304197988905412</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Visualizations</h3>
+      <p>Graphs of the price and log returns for each asset, including regime colorings and the system's transition matrix:</p>
+
+      <!-- Asset grid for 8 assets: each card keeps exact words but improves layout -->
+      <div class="asset-grid">
+        <div class="asset-card">
+          <p><strong>BRK.A:</strong></p>
+          <figure>
+            <img src="assets/regimes/BRK.A_price_and_return_with_regime.png" alt="alt text" />
+          </figure>
+          <div class="spacer"></div>
+          <div class="table-wrap"><table>
+            <thead>
+              <tr><th></th><th></th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr><td></td><td><strong>Low</strong></td><td><strong>High</strong></td></tr>
+              <tr><td><strong>Low</strong></td><td>0.9793016728134806</td><td>0.020698327186519472</td></tr>
+              <tr><td><strong>High</strong></td><td>0.08088766518658039</td><td>0.9191123348134196</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="asset-card">
+          <p><strong>DIA:</strong></p>
+          <figure>
+            <img src="assets/regimes/DIA_price_and_return_with_regime.png" alt="alt text" />
+          </figure>
+          <div class="spacer"></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th></th><th></th><th></th></tr></thead>
+            <tbody>
+              <tr><td></td><td><strong>Low</strong></td><td><strong>High</strong></td></tr>
+              <tr><td><strong>Low</strong></td><td>0.9940068227080981</td><td>0.005993177291901875</td></tr>
+              <tr><td><strong>High</strong></td><td>0.01798460020332571</td><td>0.9820153997966743</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="asset-card">
+          <p><strong>GLD:</strong></p>
+          <figure>
+            <img src="assets/regimes/GLD_price_and_return_with_regime.png" alt="alt text" />
+          </figure>
+          <div class="spacer"></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th></th><th></th><th></th></tr></thead>
+            <tbody>
+              <tr><td></td><td><strong>Low</strong></td><td><strong>High</strong></td></tr>
+              <tr><td><strong>Low</strong></td><td>0.9892374581708647</td><td>0.010762541829135337</td></tr>
+              <tr><td><strong>High</strong></td><td>0.035921152044868246</td><td>0.9640788479551318</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="asset-card">
+          <p><strong>IBM:</strong></p>
+          <figure>
+            <img src="assets/regimes/IBM_price_and_return_with_regime.png" alt="alt text" />
+          </figure>
+          <div class="spacer"></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th></th><th></th><th></th></tr></thead>
+            <tbody>
+              <tr><td></td><td><strong>Low</strong></td><td><strong>High</strong></td></tr>
+              <tr><td><strong>Low</strong></td><td>0.9852084222060226</td><td>0.014791577793977365</td></tr>
+              <tr><td><strong>High</strong></td><td>0.04815306856358633</td><td>0.9518469314364137</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="asset-card">
+          <p><strong>META:</strong></p>
+          <figure>
+            <img src="assets/regimes/META_price_and_return_with_regime.png" alt="alt text" />
+          </figure>
+          <div class="spacer"></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th></th><th></th><th></th></tr></thead>
+            <tbody>
+              <tr><td></td><td><strong>Low</strong></td><td><strong>High</strong></td></tr>
+              <tr><td><strong>Low</strong></td><td>0.9639726950017415</td><td>0.036027304998258514</td></tr>
+              <tr><td><strong>High</strong></td><td>0.14922216216275938</td><td>0.8507778378372406</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="asset-card">
+          <p><strong>QQQ:</strong></p>
+          <figure>
+            <img src="assets/regimes/QQQ_price_and_return_with_regime.png" alt="alt text" />
+          </figure>
+          <div class="spacer"></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th></th><th></th><th></th></tr></thead>
+            <tbody>
+              <tr><td></td><td><strong>Low</strong></td><td><strong>High</strong></td></tr>
+              <tr><td><strong>Low</strong></td><td>0.9965072027909997</td><td>0.0034927972090002626</td></tr>
+              <tr><td><strong>High</strong></td><td>0.010040484299280486</td><td>0.9899595157007195</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="asset-card">
+          <p><strong>SPY:</strong></p>
+          <figure>
+            <img src="assets/regimes/SPY_price_and_return_with_regime.png" alt="alt text" />
+          </figure>
+          <div class="spacer"></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th></th><th></th><th></th></tr></thead>
+            <tbody>
+              <tr><td></td><td><strong>Low</strong></td><td><strong>High</strong></td></tr>
+              <tr><td><strong>Low</strong></td><td>0.9928505940710867</td><td>0.007149405928913339</td></tr>
+              <tr><td><strong>High</strong></td><td>0.01968721268286422</td><td>0.9803127873171358</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="asset-card">
+          <p><strong>TLT:</strong></p>
+          <figure>
+            <img src="assets/regimes/TLT_price_and_return_with_regime.png" alt="alt text" />
+          </figure>
+          <div class="spacer"></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th></th><th></th><th></th></tr></thead>
+            <tbody>
+              <tr><td></td><td><strong>Low</strong></td><td><strong>High</strong></td></tr>
+              <tr><td><strong>Low</strong></td><td>0.9956434309314541</td><td>0.0043565690685459174</td></tr>
+              <tr><td><strong>High</strong></td><td>0.011831958720722067</td><td>0.9881680412792779</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <h3>Expected Regime Durations</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Asset</th><th>Low Volatility (days)</th><th>High Volatility (days)</th></tr></thead>
+        <tbody>
+          <tr><td>BRK.A</td><td>48.4</td><td>12.4</td></tr>
+          <tr><td>DIA</td><td>166.9</td><td>55.6</td></tr>
+          <tr><td>GLD</td><td>93.0</td><td>27.8</td></tr>
+          <tr><td>IBM</td><td>67.5</td><td>20.5</td></tr>
+          <tr><td>META</td><td>27.8</td><td>6.7</td></tr>
+          <tr><td>QQQ</td><td>285.7</td><td>99.5</td></tr>
+          <tr><td>SPY</td><td>140.4</td><td>50.7</td></tr>
+          <tr><td>TLT</td><td>225.6</td><td>84.6</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Analysis</h3>
+      <p>In all cases, the model seemed to favor the Low Volatility State, expecting it to last longer than the high volatility state for every asset.</p>
+      <p>Furthermore, the transition matrices tended to be extremely sticky, assigning very high probabilities for the volatility to remain in the state it is already in, with a slight advantage to being in a low volatility state. In fact, most high volatility states were concentrated around 2001, 2008, and 2020, suggesting that it takes real world factors for the market to change volatility state.</p>
+      <p>It should be noted, however, that sticky transitions matrices are a common feature of financial time-series HMMs.</p>
+
+      <hr/>
+      <h2>Backtesting</h2>
+      <h3>Strategies</h3>
+      <p>With the regimes identified, four trading strategies were backtested.<br/>Each strategy began with <strong>1 share (or equivalent fractional purchases in DCA)</strong> at the start of the period. A transaction cost of 0.1% was applied for each buy/sell action.</p>
+      <p><strong>Baseline Strategies:</strong></p>
+      <ol>
+        <li><strong>Buy-and-Hold (B&amp;H):</strong> Buy a share at the beginning and hold until the end. Benchmark passive strategy, requires no regime awareness.</li>
+        <li><strong>Dollar-Cost Averaging (DCA):</strong> Start with enough to buy 1 share, but only invest a fraction each day such that all the money is invested by the end. Reduces timing risk by spreading entry, but not volatility-adaptive.</li>
+      </ol>
+      <p><strong>Volatility-Aware Strategies:</strong></p>
+      <ol>
+        <li><strong>Risk-Averse:</strong> Fully invested during low volatility; exit to cash during high volatility. Emphasizes capital preservation by avoiding turbulent markets.</li>
+        <li><strong>Risk-Seeking:</strong> Fully invested during high volatility; exit to cash during low volatility. Attempts to capture outsized gains during volatility with the risk of high losses.</li>
+      </ol>
+      <p><strong>Note:</strong> Volatility-aware strategies had a reaction delay on one day for realism, e.g. if the market became volatile after a low volatility period, the risk-averse strategy would liquidate its assets the day after.</p>
+
+      <h3>Visualizations</h3>
+      <div class="gallery-grid">
+        <figure><img src="assets/backtests/BRK.A_backtest_results.png" alt="alt text"></figure>
+        <figure><img src="assets/backtests/DIA_backtest_results.png" alt="alt text"></figure>
+        <figure><img src="assets/backtests/GLD_backtest_results.png" alt="alt text"></figure>
+        <figure><img src="assets/backtests/IBM_backtest_results.png" alt="alt text"></figure>
+        <figure><img src="assets/backtests/META_backtest_results.png" alt="alt text"></figure>
+        <figure><img src="assets/backtests/QQQ_backtest_results.png" alt="alt text"></figure>
+        <figure><img src="assets/backtests/SPY_backtest_results.png" alt="alt text"></figure>
+        <figure><img src="assets/backtests/TLT_backtest_results.png" alt="alt text"></figure>
+      </div>
+
+      <h3>Metrics</h3>
+      <p>To evaluate the effectiveness of each backtesting strategy, six standard performance metrics were applied. Together, they capture both absolute returns and risk-adjusted outcomes:</p>
+      <ul>
+        <li><strong>Final Value:</strong> The ending portfolio value at the conclusion of the backtest. Provides a straightforward measure of overall profitability but does not account for risk.</li>
+        <li><strong>Total Log Return:</strong> The cumulative logarithmic return relative to the initial investment. Useful for comparing growth across assets and strategies on a normalized scale.</li>
+        <li><strong>Annualized Volatility:</strong> The yearly standard deviation of portfolio returns. Reflects the degree of variability and risk associated with the strategy.</li>
+        <li><strong>CAGR (Compound Annual Growth Rate):</strong> The average annualized growth rate over the backtest horizon. Demonstrates how effectively the strategy generated sustained returns over time.</li>
+        <li><strong>Max Drawdown:</strong> The largest peak-to-trough decline in portfolio value. Highlights the worst-case loss an investor would have faced.</li>
+        <li><strong>Calmar Ratio:</strong> The ratio of CAGR to Max Drawdown. Serves as a risk-adjusted performance measure, rewarding strategies that balance high growth with limited drawdowns.</li>
+      </ul>
+
+      <!-- Metrics tables kept verbatim, styled via CSS -->
+      <p><strong>BRK.A:</strong></p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr><th><strong>Strategy</strong></th><th><strong>Final Value ($)</strong></th><th><strong>Total Log Return (%)</strong></th><th><strong>Annualized Volatility (%)</strong></th><th><strong>CAGR (%)</strong></th><th><strong>Max Drawdown (%)</strong></th><th><strong>Calmar Ratio</strong></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Buy and Hold</strong></td><td>731507.54</td><td>1237.31</td><td>21.36</td><td>10.76</td><td>-51.5</td><td>0.209</td></tr>
+          <tr><td><strong>Dollar Cost Averaging</strong></td><td>290798.49</td><td>431.62</td><td>28.86</td><td>6.81</td><td>-48.6</td><td>0.14</td></tr>
+          <tr><td><strong>Risk Averse</strong></td><td>338106.35</td><td>518.11</td><td>13.01</td><td>7.44</td><td>-34.4</td><td>0.216</td></tr>
+          <tr><td><strong>Risk Seeking</strong></td><td>93924.87</td><td>71.71</td><td>16.95</td><td>2.15</td><td>-50.7</td><td>0.042</td></tr>
+        </tbody>
+      </table></div>
+
+      <p><strong>DIA:</strong></p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr><th><strong>Strategy</strong></th><th><strong>Final Value ($)</strong></th><th><strong>Total Log Return (%)</strong></th><th><strong>Annualized Volatility (%)</strong></th><th><strong>CAGR (%)</strong></th><th><strong>Max Drawdown (%)</strong></th><th><strong>Calmar Ratio</strong></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Buy and Hold</strong></td><td>448.91</td><td>313.36</td><td>18.45</td><td>5.75</td><td>-53.8</td><td>0.107</td></tr>
+          <tr><td><strong>Dollar Cost Averaging</strong></td><td>332.92</td><td>206.56</td><td>26.78</td><td>4.52</td><td>-45.5</td><td>0.099</td></tr>
+          <tr><td><strong>Risk Averse</strong></td><td>1176.76</td><td>983.58</td><td>10.39</td><td>9.85</td><td>-20.7</td><td>0.476</td></tr>
+          <tr><td><strong>Risk Seeking</strong></td><td>37.67</td><td>-65.31</td><td>15.25</td><td>-4.09</td><td>-75.0</td><td>-0.055</td></tr>
+        </tbody>
+      </table></div>
+
+      <p><strong>GLD:</strong></p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr><th><strong>Strategy</strong></th><th><strong>Final Value ($)</strong></th><th><strong>Total Log Return (%)</strong></th><th><strong>Annualized Volatility (%)</strong></th><th><strong>CAGR (%)</strong></th><th><strong>Max Drawdown (%)</strong></th><th><strong>Calmar Ratio</strong></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Buy and Hold</strong></td><td>306.98</td><td>585.54</td><td>17.57</td><td>9.74</td><td>-45.6</td><td>0.214</td></tr>
+          <tr><td><strong>Dollar Cost Averaging</strong></td><td>124.06</td><td>177.04</td><td>27.78</td><td>5.04</td><td>-30.0</td><td>0.168</td></tr>
+          <tr><td><strong>Risk Averse</strong></td><td>382.86</td><td>754.98</td><td>12.93</td><td>10.91</td><td>-29.5</td><td>0.369</td></tr>
+          <tr><td><strong>Risk Seeking</strong></td><td>33.51</td><td>-25.17</td><td>11.9</td><td>-1.39</td><td>-46.2</td><td>-0.03</td></tr>
+        </tbody>
+      </table></div>
+
+      <p><strong>IBM:</strong></p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr><th><strong>Strategy</strong></th><th><strong>Final Value ($)</strong></th><th><strong>Total Log Return (%)</strong></th><th><strong>Annualized Volatility (%)</strong></th><th><strong>CAGR (%)</strong></th><th><strong>Max Drawdown (%)</strong></th><th><strong>Calmar Ratio</strong></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Buy and Hold</strong></td><td>239.14</td><td>109.31</td><td>25.98</td><td>2.95</td><td>-58.8</td><td>0.05</td></tr>
+          <tr><td><strong>Dollar Cost Averaging</strong></td><td>220.21</td><td>92.75</td><td>32.54</td><td>2.62</td><td>-42.8</td><td>0.061</td></tr>
+          <tr><td><strong>Risk Averse</strong></td><td>757.46</td><td>562.98</td><td>16.81</td><td>7.74</td><td>-36.5</td><td>0.212</td></tr>
+          <tr><td><strong>Risk Seeking</strong></td><td>28.86</td><td>-74.74</td><td>19.83</td><td>-5.28</td><td>-78.7</td><td>-0.067</td></tr>
+        </tbody>
+      </table></div>
+
+      <p><strong>META:</strong></p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr><th><strong>Strategy</strong></th><th><strong>Final Value ($)</strong></th><th><strong>Total Log Return (%)</strong></th><th><strong>Annualized Volatility (%)</strong></th><th><strong>CAGR (%)</strong></th><th><strong>Max Drawdown (%)</strong></th><th><strong>Calmar Ratio</strong></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Buy and Hold</strong></td><td>746.97</td><td>2095.04</td><td>39.82</td><td>26.31</td><td>-76.7</td><td>0.343</td></tr>
+          <tr><td><strong>Dollar Cost Averaging</strong></td><td>248.65</td><td>630.67</td><td>47.76</td><td>16.23</td><td>-75.6</td><td>0.215</td></tr>
+          <tr><td><strong>Risk Averse</strong></td><td>1816.25</td><td>5237.2</td><td>26.06</td><td>35.09</td><td>-38.5</td><td>0.912</td></tr>
+          <tr><td><strong>Risk Seeking</strong></td><td>11.11</td><td>-67.36</td><td>30.08</td><td>-8.12</td><td>-80.2</td><td>-0.101</td></tr>
+        </tbody>
+      </table></div>
+
+      <p><strong>QQQ:</strong></p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr><th><strong>Strategy</strong></th><th><strong>Final Value ($)</strong></th><th><strong>Total Log Return (%)</strong></th><th><strong>Annualized Volatility (%)</strong></th><th><strong>CAGR (%)</strong></th><th><strong>Max Drawdown (%)</strong></th><th><strong>Calmar Ratio</strong></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Buy and Hold</strong></td><td>565.33</td><td>395.91</td><td>26.57</td><td>6.52</td><td>-83.0</td><td>0.079</td></tr>
+          <tr><td><strong>Dollar Cost Averaging</strong></td><td>977.53</td><td>757.48</td><td>32.65</td><td>8.84</td><td>-47.8</td><td>0.185</td></tr>
+          <tr><td><strong>Risk Averse</strong></td><td>7697.4</td><td>6652.11</td><td>14.28</td><td>18.07</td><td>-17.4</td><td>1.04</td></tr>
+          <tr><td><strong>Risk Seeking</strong></td><td>7.8</td><td>-93.16</td><td>22.38</td><td>-10.03</td><td>-94.2</td><td>-0.107</td></tr>
+        </tbody>
+      </table></div>
+
+      <p><strong>SPY:</strong></p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr><th><strong>Strategy</strong></th><th><strong>Final Value ($)</strong></th><th><strong>Total Log Return (%)</strong></th><th><strong>Annualized Volatility (%)</strong></th><th><strong>CAGR (%)</strong></th><th><strong>Max Drawdown (%)</strong></th><th><strong>Calmar Ratio</strong></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Buy and Hold</strong></td><td>637.47</td><td>324.72</td><td>19.44</td><td>5.87</td><td>-56.5</td><td>0.104</td></tr>
+          <tr><td><strong>Dollar Cost Averaging</strong></td><td>580.35</td><td>286.66</td><td>27.45</td><td>5.48</td><td>-48.2</td><td>0.114</td></tr>
+          <tr><td><strong>Risk Averse</strong></td><td>2788.44</td><td>1757.8</td><td>10.63</td><td>12.21</td><td>-16.7</td><td>0.733</td></tr>
+          <tr><td><strong>Risk Seeking</strong></td><td>31.02</td><td>-79.34</td><td>16.27</td><td>-6.03</td><td>-81.7</td><td>-0.074</td></tr>
+        </tbody>
+      </table></div>
+
+      <p><strong>TLT:</strong></p>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr><th><strong>Strategy</strong></th><th><strong>Final Value ($)</strong></th><th><strong>Total Log Return (%)</strong></th><th><strong>Annualized Volatility (%)</strong></th><th><strong>CAGR (%)</strong></th><th><strong>Max Drawdown (%)</strong></th><th><strong>Calmar Ratio</strong></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Buy and Hold</strong></td><td>86.32</td><td>6.02</td><td>14.47</td><td>0.25</td><td>-51.8</td><td>0.005</td></tr>
+          <tr><td><strong>Dollar Cost Averaging</strong></td><td>66.51</td><td>-18.32</td><td>25.18</td><td>-0.87</td><td>-44.5</td><td>-0.02</td></tr>
+          <tr><td><strong>Risk Averse</strong></td><td>142.19</td><td>74.64</td><td>9.8</td><td>2.45</td><td>-20.5</td><td>0.119</td></tr>
+          <tr><td><strong>Risk Seeking</strong></td><td>47.25</td><td>-41.96</td><td>10.65</td><td>-2.33</td><td>-57.9</td><td>-0.04</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Analysis</h3>
+      <p>The backtesting results highlight clear distinctions in performance across the four strategies:</p>
+      <ul>
+        <li><strong>Risk-Averse:</strong> This strategy consistently delivered the strongest risk-adjusted outcomes. Although it did not always achieve the absolute highest returns—owing to missed gains during high-volatility periods—it reliably generated positive performance with comparatively low volatility. As a result, it achieved the highest Calmar Ratios across most assets, underscoring its effectiveness in balancing growth with capital preservation.</li>
+        <li><strong>Buy-and-Hold:</strong> Performance closely tracked the long-term trajectory of the underlying assets. While generally producing solid positive returns, this strategy exhibited greater exposure to drawdowns compared to the risk-averse approach. It remains a viable baseline, but offered less stability and, in most cases, weaker efficiency in terms of risk-adjusted performance.</li>
+        <li><strong>Dollar-Cost Averaging:</strong> This method consistently underperformed relative to Buy-and-Hold. While the staggered investment schedule helped cushion the impact of market downturns, it also diminished the benefits of early compounding. Over extended horizons, this trade-off resulted in lower final returns and weaker overall growth efficiency.</li>
+        <li><strong>Risk-Seeking:</strong> This was the weakest of the four strategies. Although occasional high-volatility periods generated short-term gains, these were typically erased by subsequent losses. The results reinforce the notion that heightened market volatility is more often associated with elevated risk of drawdowns rather than sustained opportunity for excess returns.</li>
+      </ul>
+
+      <hr/>
+      <h2>Forecasting with HMM</h2>
+      <p>To extend the analysis, I tested whether HMM state probabilities could be used for forward-looking regime prediction and volatility-aware strategy evaluation via Monte Carlo simulation.</p>
+      <p>I generated 1,000 forecast paths beginning at the last observation in the dataset. At each timestep, state probabilities were updated by multiplying the previous probabilities with the HMM transition matrix. For each path, a regime (low- or high-volatility) was then sampled based on these probabilities.</p>
+      <p>The return for the next day was drawn from a normal distribution corresponding to the chosen state's estimated mean and standard deviation (as learned by the HMM). This return was applied to the previous day’s price to update that path.</p>
+      <p>After simulating all paths for a given timestep, I computed the mean, median, and the 5th and 95th percentile prices across the ensemble to summarize the forecast distribution.</p>
+      <p>The process was then repeated for subsequent timesteps, with each path evolving forward from its own prior simulated price.</p>
+      <h3>Visualizations</h3>
+      <div class="gallery-grid">
+        <figure><img src="assets/forecasts/BRK.A_forecast.png" alt="alt text"></figure>
+        <figure><img src="assets/forecasts/DIA_forecast.png" alt="alt text"></figure>
+        <figure><img src="assets/forecasts/GLD_forecast.png" alt="alt text"></figure>
+        <figure><img src="assets/forecasts/IBM_forecast.png" alt="alt text"></figure>
+        <figure><img src="assets/forecasts/META_forecast.png" alt="alt text"></figure>
+        <figure><img src="assets/forecasts/QQQ_forecast.png" alt="alt text"></figure>
+        <figure><img src="assets/forecasts/SPY_forecast.png" alt="alt text"></figure>
+        <figure><img src="assets/forecasts/TLT_forecast.png" alt="alt text"></figure>
+      </div>
+      <p><strong>Findings:</strong></p>
+      <p>Clearly, the forecasts were very general, with all of them defaulting to a low-volatility state with very high uncertainty after only a short period of time.</p>
+      <p>The clear trend is that the model predicts the market to continuously increase over time, barring any world events that it could not predict. This general trend is true, though point predictions were unreliable.</p>
+      <p>It is also possible that a simple 2-state Gaussian HMM is too much of an oversimplification to accurately point predict the market. HMMs are not typically used for this purpose, and as expected, they were unable to offer any insight other than that the market will steadily increase if it does not experience any shocks from real world factors.</p>
+
+      <hr/>
+      <h2>Discussion</h2>
+      <p>This project demonstrated that Hidden Markov Models can successfully identify volatility regimes in financial assets and that incorporating these regimes into trading strategies leads to tangible differences in performance. The main findings were:</p>
+      <ul>
+        <li><strong>Volatility Regimes:</strong> The HMM consistently identified persistent low-volatility states, with high-volatility states clustering around major financial crises (2001, 2008, 2020). Transition matrices were extremely "sticky," suggesting regimes are long-lasting and only shift under external shocks.</li>
+        <li><strong>Strategy Performance:</strong>
+          <ul>
+            <li><strong>Risk-Averse</strong> strategies were the strongest overall, producing the highest Calmar Ratios and combining solid growth with controlled risk.</li>
+            <li><strong>Buy-and-Hold</strong> remained a competitive baseline but was less efficient in balancing growth against drawdowns.</li>
+            <li><strong>Dollar-Cost Averaging</strong> underperformed relative to Buy-and-Hold, suggesting that spreading entry timing did not compensate for foregone compounding.</li>
+            <li><strong>Risk-Seeking</strong> strategies were consistently the weakest, experiencing catastrophic drawdowns and poor long-term performance.</li>
+          </ul>
+        </li>
+        <li><strong>Forecasting:</strong> Using HMMs for forward-looking prediction proved limited. Simulations quickly defaulted to low-volatility states with widening uncertainty bands, confirming that the model is more useful for retrospective regime classification than for prospective forecasting.</li>
+      </ul>
+      <p>Overall, the evidence supports the conclusion that <strong>volatility-aware strategies can outperform traditional beginner approaches over long horizons if employed correctly</strong>, but predictive use of HMMs remains constrained by their structural limitations.</p>
+
+      <hr/>
+      <h2>Future Work</h2>
+      <p>Several directions could improve both the modeling and strategy evaluation:</p>
+      <ul>
+        <li>Test shorter horizons (e.g., intraday data) → to evaluate whether volatility-aware strategies hold under high-frequency conditions where the returns are more random.</li>
+        <li>Expand to 3- or 4-state HMMs → to differentiate between moderate and extreme volatility regimes.</li>
+        <li>Compare with alternative regime-switching models (e.g., Markov-Switching GARCH).</li>
+      </ul>
+
+    </article>
+  </div>
+</body>
+</html>

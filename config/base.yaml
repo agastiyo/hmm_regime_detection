@@ -11,5 +11,5 @@ model:
   seed: 21 # Random seed for reproducibility
 
 forecasting:
-  n_steps: 1000 # Number of days to forecast
+  n_steps: 500 # Number of days to forecast
   n_sims: 1000 # Number of simulations per day for forecasting
